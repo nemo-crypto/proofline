@@ -757,7 +757,7 @@ when the database holds encrypted secrets and no key is available.
 Daily cron example (03:20, operator crontab):
 
 ```
-20 3 * * * cd /path/to/ARTEX && scripts/backup.sh --with-data >> backups/backup.log 2>&1
+20 3 * * * cd /path/to/ARTEX && mkdir -p backups && scripts/backup.sh --with-data >> backups/backup.log 2>&1
 ```
 
 ### Updating and upgrading
