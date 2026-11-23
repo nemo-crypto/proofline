@@ -21,11 +21,10 @@ body=$(awk -v head="## [$version]" '
     rest = substr($0, length(head) + 1)
     if (substr($0, 1, length(head)) == head && (rest == "" || rest ~ /^[ \t]/)) { found = 1; next }
   }
-  found { print }
+  found && /[^[:blank:]]/ { printf "%s%s\n", blank, $0; blank = ""; started = 1; next }
+  found && started { blank = blank $0 "\n" }
 ' "$changelog")
 
-# Trim leading blank lines ($(...) already drops the trailing ones).
-body=$(printf '%s\n' "$body" | sed '/./,$!d')
 
 if [ -z "$body" ]; then
   exit 1
