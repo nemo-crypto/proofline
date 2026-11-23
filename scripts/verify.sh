@@ -111,7 +111,7 @@ if want_go; then
 
   if [ "$FULL" -eq 1 ]; then
     RACE_PKGS=(
-      ./agent ./cmd/artex ./config ./db ./evidence ./guard
+      ./agent ./archivestore ./cmd/artex ./config ./db ./evidence ./guard
       ./intercept ./llmpool ./llmrec ./mcphttp ./notify ./server
       ./sidequestion ./traffic ./traffic/rewrite
     )
