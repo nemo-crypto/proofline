@@ -865,12 +865,12 @@ CGO_ENABLED=0 go build -tags embedui -o artex ./cmd/artex
 ## Development
 
 ```bash
-./dev.sh    # backend(:8787) + traffic proxy(:8788) + frontend next dev(:5173) → http://localhost:5173
+./dev.sh    # backend(:8787) + traffic proxy(:8788) + frontend next dev(:3000) → http://localhost:3000
 ```
 
 - Backend: `go run ./cmd/artex` (without `-tags embedui`, the frontend is not embedded)
 - Frontend: `cd web && npm run dev` (`/api` is reverse-proxied to the backend, with hot reload)
-- Tests: `go test ./...`
+- Tests: `go test -p 1 ./...`. See [local verification](docs/OPS.md#5-diagnostics-and-local-verification) for PostgreSQL setup.
 - Reproduce all CI checks locally: `./scripts/verify.sh` (add `--full` for `-race` and the static web build)
 - Mock preview (no backend): `cd web && NEXT_PUBLIC_MOCK=1 npm run dev`
 
