@@ -93,7 +93,9 @@ if want_go; then
   check_gofmt() {
     local -a files=()
     local out
-    mapfile -t files < <(git ls-files '*.go')
+    while IFS= read -r -d '' file; do
+      files+=("$file")
+    done < <(git ls-files -z '*.go')
     if [ "${#files[@]}" -eq 0 ]; then
       return 0
     fi
