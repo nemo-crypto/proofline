@@ -65,7 +65,8 @@ trap 'exit 143' TERM
 
 publish() {
   local name="$1"
-  if ! ln "$WORK_DIR/$name" "$OUTPUT_DIR/$name"; then
+  if [ -e "$OUTPUT_DIR/$name" ] || [ -L "$OUTPUT_DIR/$name" ] ||
+    ! mv -n "$WORK_DIR/$name" "$OUTPUT_DIR/$name" || [ -e "$WORK_DIR/$name" ]; then
     echo "could not publish $OUTPUT_DIR/$name" >&2
     exit 1
   fi
