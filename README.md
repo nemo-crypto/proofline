@@ -865,7 +865,7 @@ CGO_ENABLED=0 go build -tags embedui -o artex ./cmd/artex
 ## Development
 
 ```bash
-./dev.sh    # backend(:8787) + traffic proxy(:8788) + frontend next dev(:5173) → http://localhost:5173
+./dev.sh    # backend(:8787) + traffic proxy(:8788) + frontend next dev(:3000) → http://localhost:3000
 ```
 
 - Backend: `go run ./cmd/artex` (without `-tags embedui`, the frontend is not embedded)

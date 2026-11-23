@@ -18,7 +18,7 @@ From source (no embedded UI):
 
 ```bash
 go run ./cmd/artex                       # backend only, 127.0.0.1:8787
-cd web && npm ci && npm run dev                    # UI on :5173, /api proxied to the backend
+cd web && npm ci && npm run dev          # UI on :3000, /api proxied to the backend
 # or: ./dev.sh                           # both, plus the traffic proxy on :8788
 ```
 
