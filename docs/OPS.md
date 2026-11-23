@@ -56,8 +56,9 @@ scripts/backup.sh --with-data --keep 30 # also archive the data/ bind mount
 The dump runs inside the `postgres` compose service, so no host `psql` is needed. Restore:
 
 ```bash
-gunzip -c backups/artex-db-<ts>.sql.gz | docker compose exec -T postgres \
-  psql -U "$POSTGRES_USER" -d "$POSTGRES_DB"
+backup_file=backups/artex-db-20261123T000000Z.sql.gz  # use the file you want to restore
+gunzip -c "$backup_file" | docker compose exec -T postgres \
+  sh -c 'psql -v ON_ERROR_STOP=1 -U "$POSTGRES_USER" -d "$POSTGRES_DB"'
 ```
 
 Back up the key directory as well: without it, JWTs cannot be verified and sealed

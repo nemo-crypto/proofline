@@ -12,8 +12,9 @@
 #
 # The database dump runs inside the postgres compose service, so no psql client
 # is needed on the host. Restore:
-#   gunzip -c backups/artex-db-<ts>.sql.gz | docker compose exec -T postgres \
-#     psql -U "$POSTGRES_USER" -d "$POSTGRES_DB"
+#   backup_file=backups/artex-db-20261123T000000Z.sql.gz  # use the file you want to restore
+#   gunzip -c "$backup_file" | docker compose exec -T postgres \
+#     sh -c 'psql -v ON_ERROR_STOP=1 -U "$POSTGRES_USER" -d "$POSTGRES_DB"'
 set -euo pipefail
 cd "$(dirname "$0")/.."
 
