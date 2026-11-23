@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useRef } from "react";
+import { useEffect, useId, useRef } from "react";
 
 import { ChevronLeftIcon, ChevronRightIcon } from "lucide-react";
 
@@ -39,6 +39,7 @@ export function TablePagination({
   onPageSizeChange,
   pageSizeOptions = [10, 20, 50],
 }: TablePaginationProps) {
+  const pageSizeLabel = useId();
   const totalPages = Math.max(1, Math.ceil(total / pageSize));
   const safePage = Math.min(Math.max(1, page), totalPages);
   const from = total === 0 ? 0 : (safePage - 1) * pageSize + 1;
@@ -54,7 +55,7 @@ export function TablePagination({
     <div className="flex flex-wrap items-center justify-between gap-2 border-t px-4 py-2 lg:px-6">
       <div className="text-muted-foreground flex items-center gap-2 text-xs">
         <Select value={String(pageSize)} onValueChange={(v) => onPageSizeChange(Number(v))}>
-          <SelectTrigger size="sm" className="h-7 w-16">
+          <SelectTrigger size="sm" className="h-7 w-16" aria-labelledby={pageSizeLabel}>
             <SelectValue />
           </SelectTrigger>
           <SelectContent>
@@ -65,7 +66,7 @@ export function TablePagination({
             ))}
           </SelectContent>
         </Select>
-        <span>{t("per page")}</span>
+        <span id={pageSizeLabel}>{t("per page")}</span>
         {total > 0 ? (
           <span className="tabular-nums">{t("{from}–{to} / {total} total", { from, to, total })}</span>
         ) : (
@@ -78,6 +79,7 @@ export function TablePagination({
           <PaginationContent>
             <PaginationItem>
               <Button
+                type="button"
                 variant="ghost"
                 size="icon-sm"
                 disabled={safePage === 1}
@@ -95,6 +97,7 @@ export function TablePagination({
               ) : (
                 <PaginationItem key={p}>
                   <Button
+                    type="button"
                     variant={p === safePage ? "outline" : "ghost"}
                     size="icon-sm"
                     onClick={() => onPageChange(p)}
@@ -107,6 +110,7 @@ export function TablePagination({
             )}
             <PaginationItem>
               <Button
+                type="button"
                 variant="ghost"
                 size="icon-sm"
                 disabled={safePage === totalPages}
