@@ -1,42 +1,22 @@
-<div align="center">
+# Proofline
 
-<img src="web/public/logo.svg" width="84" alt="ARTEX logo" />
+**A self-hosted workspace for authorized security assessments.**
 
-# ARTEX
+Proofline brings asset inventory, assessment activity, evidence, and findings into one
+workspace. Reviewers can trace a finding back to the affected asset and the recorded HTTP
+exchange that supports it.
 
-**Autonomous penetration testing that keeps its receipts.**
+[Screenshots](#screenshots) · [Operations](docs/OPS.md) · [Configuration](#configuration) · [Security](SECURITY.md) · [License](LICENSE)
 
+## What you can review
 
-Self-hosted multi-agent offensive security. A planner explores, workers run real tools,
-and every finding stays bound to the assets and HTTP traffic that prove it.
+- **Assets and coverage.** See which assets are in scope and how they relate to recorded activity.
+- **Findings and evidence.** Review the associated requests, responses, and retest records.
+- **Assessment history.** See what happened during a task and which actions required approval.
+- **Deployment and data.** Run the application on your own infrastructure with PostgreSQL.
 
-[![Release](https://img.shields.io/github/v/release/BaaRai/ARTEX?label=release&color=6b34db)](https://github.com/BaaRai/ARTEX/releases)
-[![License](https://img.shields.io/github/license/BaaRai/ARTEX?color=6b34db)](LICENSE)
-[![CI](https://github.com/BaaRai/ARTEX/actions/workflows/ci.yml/badge.svg?branch=main)](https://github.com/BaaRai/ARTEX/actions/workflows/ci.yml)
-[![Go](https://img.shields.io/github/go-mod/go-version/BaaRai/ARTEX?color=6b34db)](go.mod)
-
-[Quick start](#quick-start) · [Screenshots](#screenshots) · [How it works](#how-it-works) · [Install](#installation) · [Configuration](#configuration) · [Security](SECURITY.md)
-
-</div>
-
----
-
-ARTEX is a self-hosted, LLM-driven penetration testing platform. It is not a chat wrapper around
-a scanner: a planner splits a goal into intents, workers execute them with real tools, and the
-results are written back into **two linked graphs**: one for what you know about the target, one
-for how the test is progressing. Every finding can carry the captured request and response that
-justify it, and every autonomous action passes through scope rules, approval gates and budgets.
-
-- **It explores, it doesn't chat.** Goal decomposition, intent dispatch, worker execution and
-  write-back form a closed loop that keeps advancing until the goal is proven.
-- **Two graphs, one audit trail.** The shared asset graph says *what exists*; the per-task
-  exploration graph says *what was tried, what it produced, and why*. Anchors link the two.
-- **Findings with evidence.** A recording MITM proxy and a browser extension capture real traffic;
-  findings, evidence quotes and retests are tied to the exact request/response.
-- **Autonomy with brakes.** Human-in-the-loop approvals, argv-prefix rules, scope/deny gates,
-  token and turn budgets, a target noise governor, and prompt-injection framing on tool output.
-- **Self-hosted and model-agnostic.** One Go binary with the Next.js UI embedded, PostgreSQL,
-  your own Anthropic/OpenAI-compatible endpoint, or a local Ollama.
+Proofline is a fork of [ARTEX](https://github.com/BaaRai/ARTEX). The application, command names,
+and upstream release assets still use the ARTEX name.
 
 ---
 
@@ -969,7 +949,11 @@ Operational security properties:
 
 ## About this fork
 
-This repository is the English translation and continuation of ARTEX, originally by [Autumn-27](https://github.com/Autumn-27). The upstream repository is no longer public, so the link points to the author profile. Changes in this fork are tracked in [CHANGELOG.md](CHANGELOG.md), under the same AGPL-3.0 license.
+Proofline is maintained in the [nemo-crypto/proofline repository](https://github.com/nemo-crypto/proofline).
+Its direct upstream is [nemozhou-coder/proofline](https://github.com/nemozhou-coder/proofline),
+which is based on [BaaRai/ARTEX](https://github.com/BaaRai/ARTEX), the English-language
+continuation of the original project by [Autumn-27](https://github.com/Autumn-27).
+The code is distributed under the [AGPL-3.0 license](LICENSE).
 
 ---
 
