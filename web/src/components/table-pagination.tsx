@@ -79,6 +79,7 @@ export function TablePagination({
           <PaginationContent>
             <PaginationItem>
               <Button
+                type="button"
                 variant="ghost"
                 size="icon-sm"
                 disabled={safePage === 1}
@@ -96,6 +97,7 @@ export function TablePagination({
               ) : (
                 <PaginationItem key={p}>
                   <Button
+                    type="button"
                     variant={p === safePage ? "outline" : "ghost"}
                     size="icon-sm"
                     onClick={() => onPageChange(p)}
@@ -108,6 +110,7 @@ export function TablePagination({
             )}
             <PaginationItem>
               <Button
+                type="button"
                 variant="ghost"
                 size="icon-sm"
                 disabled={safePage === totalPages}
