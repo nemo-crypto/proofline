@@ -1091,7 +1091,7 @@ function SortableTaskHead({
   onSort: (field: TaskSortField) => void;
 }) {
   const active = activeField === field;
-  let ariaSort: React.AriaAttributes["aria-sort"] = "none";
+  let ariaSort: React.AriaAttributes["aria-sort"] = undefined;
   if (active) ariaSort = direction === "asc" ? "ascending" : "descending";
 
   let actionLabel = t("Sort by {label} descending", { label });
