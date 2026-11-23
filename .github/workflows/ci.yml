@@ -150,6 +150,7 @@ jobs:
       - run: npm run test:traffic-stream
       - run: npm run test:i18n
       - run: npm run test:bash
+      - run: node --check ../extension/background.js && node --check ../extension/popup.js
       - run: npm run build:static
 
   python:
