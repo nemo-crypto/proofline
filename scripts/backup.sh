@@ -25,8 +25,17 @@ OUTPUT_DIR="backups"
 WITH_DATA=0
 while [ $# -gt 0 ]; do
   case "$1" in
-    --keep) KEEP="${2:?}"; shift 2 ;;
-    --output-dir) OUTPUT_DIR="${2:?}"; shift 2 ;;
+    --keep|--output-dir)
+      case "${2:-}" in
+        ''|--*) printf '%s requires a value\n' "$1" >&2; exit 2 ;;
+      esac
+      if [ "$1" = --keep ]; then
+        KEEP="$2"
+      else
+        OUTPUT_DIR="$2"
+      fi
+      shift 2
+      ;;
     --with-data) WITH_DATA=1; shift ;;
     -h|--help) usage; exit 0 ;;
     *) echo "unknown option: $1" >&2; usage >&2; exit 2 ;;
