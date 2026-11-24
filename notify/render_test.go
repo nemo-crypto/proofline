@@ -158,3 +158,12 @@ func TestTruncateHTMLNeverCutsEntity(t *testing.T) {
 		}
 	}
 }
+
+func TestNotificationTitleFallsBackForWhitespaceOnlyFields(t *testing.T) {
+	if got := (Item{Name: "  ", VulnClass: " Sample "}).Title(); got != "Sample" {
+		t.Fatalf("title = %q, want class", got)
+	}
+	if got := (Item{Name: "\t", VulnClass: " "}).Title(); got != "(unnamed vulnerability)" {
+		t.Fatalf("title = %q, want placeholder", got)
+	}
+}
