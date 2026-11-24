@@ -138,3 +138,14 @@ func TestMalformedConfigIsAnError(t *testing.T) {
 		t.Fatal("Load: want a parse error")
 	}
 }
+
+func TestSkillDirReportsCreationFailure(t *testing.T) {
+	file := filepath.Join(t.TempDir(), "file")
+	if err := os.WriteFile(file, nil, 0o600); err != nil {
+		t.Fatal(err)
+	}
+	t.Setenv("ARTEX_SKILL_DIR", filepath.Join(file, "skills"))
+	if dir, err := SkillDir(); err == nil || dir != "" {
+		t.Fatalf("expected a directory creation error, got %q, %v", dir, err)
+	}
+}
