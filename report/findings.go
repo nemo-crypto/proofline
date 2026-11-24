@@ -50,7 +50,12 @@ func FindingsMarkdown(fs []*db.DBFinding, generatedAt time.Time) string {
 	// Summary: counts per severity.
 	counts := map[string]int{}
 	for _, f := range items {
-		counts[f.Severity]++
+		switch f.Severity {
+		case "critical", "high", "medium", "low":
+			counts[f.Severity]++
+		default:
+			counts["other"]++
+		}
 	}
 	b.WriteString("## Summary\n\n")
 	b.WriteString("| Severity | Count |\n| --- | --- |\n")
@@ -58,6 +63,9 @@ func FindingsMarkdown(fs []*db.DBFinding, generatedAt time.Time) string {
 		{"critical", "Critical"}, {"high", "High"}, {"medium", "Medium"}, {"low", "Low"},
 	} {
 		fmt.Fprintf(&b, "| %s | %d |\n", s.label, counts[s.key])
+	}
+	if count := counts["other"]; count > 0 {
+		fmt.Fprintf(&b, "| Other | %d |\n", count)
 	}
 	b.WriteString("\n")
 

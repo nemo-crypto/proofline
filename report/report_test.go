@@ -401,3 +401,14 @@ func TestFindingFilenameUnicodeAndIDSuffix(t *testing.T) {
 		t.Fatalf("expected preserved distinct ID suffixes: f1=%q f2=%q", f1, f2)
 	}
 }
+
+func TestFindingsSummaryCountsEntriesWithoutKnownSeverity(t *testing.T) {
+	output := FindingsMarkdown([]*db.DBFinding{
+		{Severity: "high"}, {Severity: "legacy"}, {},
+	}, time.Time{})
+	for _, row := range []string{"| High | 1 |", "| Other | 2 |"} {
+		if !strings.Contains(output, row) {
+			t.Fatalf("missing %q from summary:\n%s", row, output)
+		}
+	}
+}
