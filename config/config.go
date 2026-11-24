@@ -200,7 +200,11 @@ func PostgresDSN() (dsn, source string, err error) {
 		return d, "config file " + Path() + " (database.dsn)", nil
 	}
 	if db.Host != "" || db.DBName != "" || db.User != "" {
-		return db.buildDSN(), "config file " + Path() + " (database fields)", nil
+		source := "config file " + Path() + " (database fields)"
+		if db.Port < 0 || db.Port > 65535 {
+			return "", source, fmt.Errorf("database.port %d is not a TCP port", db.Port)
+		}
+		return db.buildDSN(), source, nil
 	}
 	return "", "", fmt.Errorf("no database config found: ARTEX_PG_DSN is not set, ARTEX_PG_HOST/USER/PASSWORD/DBNAME are not set, and config file %s provides no database (dsn or host/user/dbname). Create the config file or set the environment variable and retry", Path())
 }
