@@ -87,3 +87,12 @@ func TestArchiveEncryptionConfiguration(t *testing.T) {
 		t.Fatal(err)
 	}
 }
+
+func TestArchiveURIRoundTripsEscapedPrefix(t *testing.T) {
+	store := &Store{bucket: "test-bucket", prefix: "reports/100% ready/"}
+	uri := store.URI(1, 2, "checksum")
+	key, err := store.key(uri)
+	if err != nil || key != "reports/100% ready/task-1-2-checksum.tar.zst" {
+		t.Fatalf("URI %q did not round trip: %q, %v", uri, key, err)
+	}
+}
