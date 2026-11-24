@@ -51,4 +51,21 @@ else
   echo "PASS: missing section [9.9.9] exits non-zero with no output"
 fi
 
+# A CRLF checkout can contain whitespace-only lines around, or instead of, notes.
+printf '## [2.0.0]\r\n \t\r\nRelease notes.\r\n \t\r\n## [1.9.0]\r\n \t\r\n' > "$tmp/CRLF.md"
+
+if out=$(bash "$extract" 2.0.0 "$tmp/CRLF.md") && [ "$out" = 'Release notes.' ]; then
+  echo "PASS: CRLF section trims whitespace-only boundary lines"
+else
+  echo "FAIL: CRLF section did not return the expected notes"
+  fail=1
+fi
+
+if out=$(bash "$extract" 1.9.0 "$tmp/CRLF.md") || [ -n "$out" ]; then
+  echo "FAIL: whitespace-only section should exit non-zero with no output"
+  fail=1
+else
+  echo "PASS: whitespace-only section exits non-zero with no output"
+fi
+
 exit "$fail"
