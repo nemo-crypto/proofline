@@ -54,6 +54,22 @@ func TestPostgresDSNPrecedence(t *testing.T) {
 	}
 }
 
+func TestPostgresDSNRejectsOutOfRangeConfigPort(t *testing.T) {
+	clearPGComponentEnv(t)
+	t.Setenv("ARTEX_PG_DSN", "")
+	path := filepath.Join(t.TempDir(), "config.json")
+	t.Setenv("ARTEX_CONFIG", path)
+	for _, invalid := range []string{"-1", "65536"} {
+		raw := []byte(`{"database":{"host":"postgres","port":` + invalid + `}}`)
+		if err := os.WriteFile(path, raw, 0o600); err != nil {
+			t.Fatal(err)
+		}
+		if _, _, err := PostgresDSN(); err == nil || !strings.Contains(err.Error(), "database.port") {
+			t.Fatalf("invalid port %s: expected config error, got %v", invalid, err)
+		}
+	}
+}
+
 func TestPostgresDSNEncodesComponentPassword(t *testing.T) {
 	clearPGComponentEnv(t)
 	t.Setenv("ARTEX_PG_DSN", "")
