@@ -119,6 +119,19 @@ func TestRedactMasksEveryDSNPasswordForm(t *testing.T) {
 	}
 }
 
+func TestUnreadableImplicitConfigDoesNotFallThrough(t *testing.T) {
+	t.Setenv("ARTEX_CONFIG", "")
+	dir := t.TempDir()
+	t.Chdir(dir)
+	path := filepath.Join(dir, "config.json")
+	if err := os.Symlink("config.json", path); err != nil {
+		t.Skipf("symlinks unavailable: %v", err)
+	}
+	if _, err := Load(); err == nil || !strings.Contains(err.Error(), "read config file") {
+		t.Fatalf("expected the read error for %s, got %v", path, err)
+	}
+}
+
 func TestMalformedConfigIsAnError(t *testing.T) {
 	cfgPath := filepath.Join(t.TempDir(), "config.json")
 	// What install.sh used to write for a password containing a double quote.
