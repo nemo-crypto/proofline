@@ -35,7 +35,7 @@ Usage:
   ./build.sh --release               Build and package all supported targets
 
 Options:
-  --release              Build the amd64/arm64 targets for Linux, macOS, and Windows, and generate zips
+  --release              Build Linux and macOS (amd64/arm64) and Windows (amd64), and generate zips
   --target OS/ARCH       Set a single target, e.g. windows/amd64
   --upx                  Force UPX compression of the binary (may affect compatibility on some Linux environments)
   --no-compress          No UPX; use only Go linker trimming and zip compression
