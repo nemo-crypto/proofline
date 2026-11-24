@@ -23,7 +23,7 @@ import (
 // sortFindingsForExport sorts by severity descending, then by time descending, consistent with the summary report's grouping.
 func sortFindingsForExport(fs []*db.DBFinding) {
 	sort.SliceStable(fs, func(i, j int) bool {
-		ri, rj := sevRank[fs[i].Severity], sevRank[fs[j].Severity]
+		ri, rj := severityRank(fs[i].Severity), severityRank(fs[j].Severity)
 		if ri != rj {
 			return ri < rj // smaller sevRank means more severe
 		}
@@ -50,7 +50,12 @@ func FindingsMarkdown(fs []*db.DBFinding, generatedAt time.Time) string {
 	// Summary: counts per severity.
 	counts := map[string]int{}
 	for _, f := range items {
-		counts[f.Severity]++
+		switch f.Severity {
+		case "critical", "high", "medium", "low":
+			counts[f.Severity]++
+		default:
+			counts["other"]++
+		}
 	}
 	b.WriteString("## Summary\n\n")
 	b.WriteString("| Severity | Count |\n| --- | --- |\n")
@@ -58,6 +63,9 @@ func FindingsMarkdown(fs []*db.DBFinding, generatedAt time.Time) string {
 		{"critical", "Critical"}, {"high", "High"}, {"medium", "Medium"}, {"low", "Low"},
 	} {
 		fmt.Fprintf(&b, "| %s | %d |\n", s.label, counts[s.key])
+	}
+	if count := counts["other"]; count > 0 {
+		fmt.Fprintf(&b, "| Other | %d |\n", count)
 	}
 	b.WriteString("\n")
 
@@ -84,7 +92,8 @@ func FindingsMarkdown(fs []*db.DBFinding, generatedAt time.Time) string {
 			fmt.Fprintf(&b, "%s\n\n", s)
 		}
 		if e := strings.TrimSpace(f.Evidence); e != "" {
-			fmt.Fprintf(&b, "**Evidence:**\n\n```\n%s\n```\n\n", e)
+			b.WriteString("**Evidence:**\n\n")
+			writeLiteralBlock(&b, e)
 		}
 		b.WriteString(qualityNarrative(q))
 		b.WriteString(detailedReportFull(f.Report, "**Detailed report:**"))
@@ -115,7 +124,8 @@ func SingleFindingMarkdown(f *db.DBFinding, generatedAt time.Time) string {
 		fmt.Fprintf(&b, "## Summary\n\n%s\n\n", s)
 	}
 	if e := strings.TrimSpace(f.Evidence); e != "" {
-		fmt.Fprintf(&b, "## Evidence\n\n```\n%s\n```\n\n", e)
+		b.WriteString("## Evidence\n\n")
+		writeLiteralBlock(&b, e)
 	}
 	b.WriteString(qualityNarrative(q))
 	b.WriteString(detailedReportFull(f.Report, "## Detailed Report"))

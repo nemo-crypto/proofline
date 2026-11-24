@@ -402,6 +402,48 @@ func TestFindingFilenameUnicodeAndIDSuffix(t *testing.T) {
 	}
 }
 
+func TestReportSortsUnknownSeverityAfterKnownSeverity(t *testing.T) {
+	task := Markdown(Input{Findings: []*db.Node{
+		reportNode(1, "legacy", "Older record"),
+		reportNode(2, "low", "Low priority record"),
+	}})
+	batch := FindingsMarkdown([]*db.DBFinding{
+		{Severity: "legacy", Name: "Older record"},
+		{Severity: "low", Name: "Low priority record"},
+	}, time.Time{})
+	for _, output := range []string{task, batch} {
+		known := strings.Index(output, "Low priority record")
+		unknown := strings.Index(output, "Older record")
+		if known == -1 || unknown == -1 || known >= unknown {
+			t.Fatalf("expected known severity before unknown severity, got %q", output)
+		}
+	}
+}
+
+func TestExportKeepsMarkdownFenceInEvidence(t *testing.T) {
+	record := &db.DBFinding{Evidence: "first line\n````\nlast line"}
+	want := "`````\nfirst line\n````\nlast line\n`````\n"
+	for _, output := range []string{
+		FindingsMarkdown([]*db.DBFinding{record}, time.Time{}),
+		SingleFindingMarkdown(record, time.Time{}),
+	} {
+		if !strings.Contains(output, want) {
+			t.Fatalf("evidence was not kept in a single Markdown block: %q", output)
+		}
+	}
+}
+
+func TestFindingsSummaryCountsEntriesWithoutKnownSeverity(t *testing.T) {
+	output := FindingsMarkdown([]*db.DBFinding{
+		{Severity: "high"}, {Severity: "legacy"}, {},
+	}, time.Time{})
+	for _, row := range []string{"| High | 1 |", "| Other | 2 |"} {
+		if !strings.Contains(output, row) {
+			t.Fatalf("missing %q from summary:\n%s", row, output)
+		}
+	}
+}
+
 func TestReportHeadingsStayOnOneLine(t *testing.T) {
 	record := &db.DBFinding{Name: "First line\r\n second line"}
 	for _, output := range []string{
