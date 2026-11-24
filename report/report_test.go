@@ -401,3 +401,16 @@ func TestFindingFilenameUnicodeAndIDSuffix(t *testing.T) {
 		t.Fatalf("expected preserved distinct ID suffixes: f1=%q f2=%q", f1, f2)
 	}
 }
+
+func TestFindingExportsAreStableForEqualTimestamps(t *testing.T) {
+	first := &db.DBFinding{ID: 10, Severity: "high", Name: "First"}
+	second := &db.DBFinding{ID: 11, Severity: "high", Name: "Second"}
+	a := []*db.DBFinding{first, second}
+	b := []*db.DBFinding{second, first}
+	if !bytes.Equal(FindingsCSV(a), FindingsCSV(b)) {
+		t.Fatal("CSV order changed when only the input order changed")
+	}
+	if FindingsMarkdown(a, time.Time{}) != FindingsMarkdown(b, time.Time{}) {
+		t.Fatal("Markdown order changed when only the input order changed")
+	}
+}
