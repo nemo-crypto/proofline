@@ -44,16 +44,6 @@ done
 # Keep the retention format as a positive decimal integer.
 case "$KEEP" in (*[!0-9]*|''|0*) echo "--keep must be a positive integer" >&2; exit 2 ;; esac
 
-# Compose reads .env for credentials; source it for the dump command too.
-if [ -f .env ]; then
-  set -a
-  # shellcheck disable=SC1091
-  . ./.env
-  set +a
-fi
-PGUSER_NAME="${POSTGRES_USER:-artex}"
-PGDATABASE_NAME="${POSTGRES_DB:-artex}"
-
 mkdir -p "$OUTPUT_DIR"
 TS=$(date -u +%Y%m%dT%H%M%SZ)
 DB_NAME="artex-db-$TS.sql.gz"
@@ -74,7 +64,7 @@ publish() {
   echo "wrote $OUTPUT_DIR/$name ($(du -h "$OUTPUT_DIR/$name" | cut -f1))"
 }
 
-if ! docker compose exec -T postgres pg_dump -U "$PGUSER_NAME" "$PGDATABASE_NAME" | gzip > "$WORK_DIR/$DB_NAME"; then
+if ! docker compose exec -T postgres sh -c 'exec pg_dump -U "$POSTGRES_USER" "$POSTGRES_DB"' | gzip > "$WORK_DIR/$DB_NAME"; then
   echo "pg_dump failed (is the stack running?)" >&2
   exit 1
 fi
