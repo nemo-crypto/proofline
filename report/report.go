@@ -63,6 +63,24 @@ func parseFinding(n *db.Node) findingView {
 
 var sevRank = map[string]int{"critical": 0, "high": 1, "medium": 2, "low": 3, "": 4}
 
+// writeLiteralBlock keeps recorded text literal even when it contains its own
+// Markdown fences.
+func writeLiteralBlock(b *strings.Builder, text string) {
+	fenceLength, run := 3, 0
+	for _, ch := range text {
+		if ch != '`' {
+			run = 0
+			continue
+		}
+		run++
+		if run >= fenceLength {
+			fenceLength = run + 1
+		}
+	}
+	fence := strings.Repeat("`", fenceLength)
+	fmt.Fprintf(b, "%s\n%s\n%s\n\n", fence, text, fence)
+}
+
 // Markdown renders the report.
 func Markdown(in Input) string {
 	var b strings.Builder
@@ -104,7 +122,8 @@ func Markdown(in Input) string {
 			fmt.Fprintf(&b, "%s\n\n", nz(f.Summary, ""))
 			b.WriteString(qualityBullets(f.Q, true)) // honest proof strength, including its gaps
 			if f.PoC != "" {
-				fmt.Fprintf(&b, "**PoC / Evidence:**\n\n```\n%s\n```\n\n", f.PoC)
+				b.WriteString("**PoC / Evidence:**\n\n")
+				writeLiteralBlock(&b, f.PoC)
 			}
 			b.WriteString(qualityNarrative(f.Q)) // why it holds / what failed, only when written
 			// The same warning, from the same helper, that the findings export prints: a
