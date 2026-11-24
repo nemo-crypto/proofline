@@ -52,7 +52,7 @@ func (q Quality) ReportStale() bool {
 // reportStale is the predicate behind ReportStale, taking the raw row fields so
 // callers holding a db.DBFinding (the export path) ask the same question.
 func reportStale(report string, evidenceVersion, reportEvidenceVersion int64) bool {
-	return report != "" && evidenceVersion != reportEvidenceVersion
+	return strings.TrimSpace(report) != "" && evidenceVersion != reportEvidenceVersion
 }
 
 // qualityFromRows builds a Quality from the report's single quality lookup,
