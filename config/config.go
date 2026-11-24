@@ -7,6 +7,7 @@ import (
 	"errors"
 	"fmt"
 	"io/fs"
+	"net"
 	"net/url"
 	"os"
 	"path/filepath"
@@ -106,7 +107,7 @@ func Path() string {
 	}
 	candidates = append(candidates, filepath.Join(BaseDir(), "config.json"))
 	for _, c := range candidates {
-		if _, err := os.Stat(c); err == nil {
+		if _, err := os.Stat(c); !errors.Is(err, fs.ErrNotExist) {
 			return c
 		}
 	}
@@ -125,12 +126,15 @@ func Load() (Config, error) {
 	if err != nil {
 		return Config{}, fmt.Errorf("read config file %s: %w", path, err)
 	}
-	var disk struct {
+	var disk *struct {
 		Config
 		LegacyTaskUserAgents json.RawMessage `json:"assessment_identification"`
 	}
 	if err := json.Unmarshal(b, &disk); err != nil {
 		return Config{}, fmt.Errorf("parse config file %s: %w", path, err)
+	}
+	if disk == nil {
+		return Config{}, fmt.Errorf("parse config file %s: expected a JSON object", path)
 	}
 	if disk.LegacyTaskUserAgents != nil {
 		return Config{}, fmt.Errorf("parse config file %s: assessment_identification was replaced by task_user_agents. Move each task entry to task_user_agents with its origins list", path)
@@ -158,7 +162,9 @@ func SkillDir() (string, error) {
 			d = filepath.Join(BaseDir(), "skills")
 		}
 	}
-	_ = os.MkdirAll(d, 0o755)
+	if err := os.MkdirAll(d, 0o755); err != nil {
+		return "", fmt.Errorf("create skill directory %s: %w", d, err)
+	}
 	return d, nil
 }
 
@@ -194,7 +200,11 @@ func PostgresDSN() (dsn, source string, err error) {
 		return d, "config file " + Path() + " (database.dsn)", nil
 	}
 	if db.Host != "" || db.DBName != "" || db.User != "" {
-		return db.buildDSN(), "config file " + Path() + " (database fields)", nil
+		source := "config file " + Path() + " (database fields)"
+		if db.Port < 0 || db.Port > 65535 {
+			return "", source, fmt.Errorf("database.port %d is not a TCP port", db.Port)
+		}
+		return db.buildDSN(), source, nil
 	}
 	return "", "", fmt.Errorf("no database config found: ARTEX_PG_DSN is not set, ARTEX_PG_HOST/USER/PASSWORD/DBNAME are not set, and config file %s provides no database (dsn or host/user/dbname). Create the config file or set the environment variable and retry", Path())
 }
@@ -240,7 +250,7 @@ func (d Database) buildDSN() string {
 	}
 	u := url.URL{
 		Scheme: "postgres",
-		Host:   host + ":" + strconv.Itoa(port),
+		Host:   net.JoinHostPort(strings.TrimSuffix(strings.TrimPrefix(host, "["), "]"), strconv.Itoa(port)),
 		Path:   "/" + d.DBName,
 	}
 	if d.User != "" {
