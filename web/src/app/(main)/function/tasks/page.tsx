@@ -1090,7 +1090,7 @@ function SortableTaskHead({
   onSort: (field: TaskSortField) => void;
 }) {
   const active = activeField === field;
-  let ariaSort: React.AriaAttributes["aria-sort"] = "none";
+  let ariaSort: React.AriaAttributes["aria-sort"] = undefined;
   if (active) ariaSort = direction === "asc" ? "ascending" : "descending";
 
   let actionLabel = t("Sort by {label} descending", { label });
@@ -1763,7 +1763,7 @@ function TaskArchivesPanel({ onChanged }: { onChanged: () => void }) {
 
   React.useEffect(() => {
     void load();
-    const stopPolling = setVisibleInterval(() => void load(), 2_000);
+    const stopPolling = setVisibleInterval(() => load(), 2_000);
     return stopPolling;
   }, [load]);
 

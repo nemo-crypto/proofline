@@ -147,3 +147,10 @@ func TestMatchStatusChangeRequiresOptIn(t *testing.T) {
 		t.Fatal("creation events should not depend on on_status_change")
 	}
 }
+
+func TestParseFilterDiscardsPartiallyDecodedValues(t *testing.T) {
+	filter := ParseFilter([]byte(`{"min_severity":"critical","task_ids":"invalid"}`))
+	if !Match(filter, Snapshot{Severity: "low"}) {
+		t.Fatalf("malformed input retained a partially decoded filter: %#v", filter)
+	}
+}

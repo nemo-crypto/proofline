@@ -54,6 +54,22 @@ func TestPostgresDSNPrecedence(t *testing.T) {
 	}
 }
 
+func TestPostgresDSNRejectsOutOfRangeConfigPort(t *testing.T) {
+	clearPGComponentEnv(t)
+	t.Setenv("ARTEX_PG_DSN", "")
+	path := filepath.Join(t.TempDir(), "config.json")
+	t.Setenv("ARTEX_CONFIG", path)
+	for _, invalid := range []string{"-1", "65536"} {
+		raw := []byte(`{"database":{"host":"postgres","port":` + invalid + `}}`)
+		if err := os.WriteFile(path, raw, 0o600); err != nil {
+			t.Fatal(err)
+		}
+		if _, _, err := PostgresDSN(); err == nil || !strings.Contains(err.Error(), "database.port") {
+			t.Fatalf("invalid port %s: expected config error, got %v", invalid, err)
+		}
+	}
+}
+
 func TestPostgresDSNEncodesComponentPassword(t *testing.T) {
 	clearPGComponentEnv(t)
 	t.Setenv("ARTEX_PG_DSN", "")
@@ -119,6 +135,19 @@ func TestRedactMasksEveryDSNPasswordForm(t *testing.T) {
 	}
 }
 
+func TestUnreadableImplicitConfigDoesNotFallThrough(t *testing.T) {
+	t.Setenv("ARTEX_CONFIG", "")
+	dir := t.TempDir()
+	t.Chdir(dir)
+	path := filepath.Join(dir, "config.json")
+	if err := os.Symlink("config.json", path); err != nil {
+		t.Skipf("symlinks unavailable: %v", err)
+	}
+	if _, err := Load(); err == nil || !strings.Contains(err.Error(), "read config file") {
+		t.Fatalf("expected the read error for %s, got %v", path, err)
+	}
+}
+
 func TestMalformedConfigIsAnError(t *testing.T) {
 	cfgPath := filepath.Join(t.TempDir(), "config.json")
 	// What install.sh used to write for a password containing a double quote.
@@ -136,5 +165,37 @@ func TestMalformedConfigIsAnError(t *testing.T) {
 	}
 	if _, err := Load(); err == nil {
 		t.Fatal("Load: want a parse error")
+	}
+}
+
+func TestSkillDirReportsCreationFailure(t *testing.T) {
+	file := filepath.Join(t.TempDir(), "file")
+	if err := os.WriteFile(file, nil, 0o600); err != nil {
+		t.Fatal(err)
+	}
+	t.Setenv("ARTEX_SKILL_DIR", filepath.Join(file, "skills"))
+	if dir, err := SkillDir(); err == nil || dir != "" {
+		t.Fatalf("expected a directory creation error, got %q, %v", dir, err)
+	}
+}
+
+func TestPostgresDSNFormatsIPv6Host(t *testing.T) {
+	for _, host := range []string{"2001:db8::1", "[2001:db8::1]"} {
+		dsn := (Database{Host: host, Port: 5433, DBName: "app"}).buildDSN()
+		u, err := url.Parse(dsn)
+		if err != nil || u.Hostname() != "2001:db8::1" || u.Port() != "5433" {
+			t.Fatalf("invalid IPv6 connection URL %q: %v", dsn, err)
+		}
+	}
+}
+
+func TestNullConfigIsAnError(t *testing.T) {
+	path := filepath.Join(t.TempDir(), "config.json")
+	if err := os.WriteFile(path, []byte("null"), 0o600); err != nil {
+		t.Fatal(err)
+	}
+	t.Setenv("ARTEX_CONFIG", path)
+	if _, err := Load(); err == nil || !strings.Contains(err.Error(), "expected a JSON object") {
+		t.Fatalf("expected a config type error, got %v", err)
 	}
 }

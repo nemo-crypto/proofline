@@ -64,12 +64,12 @@ func New(c Config) (*Store, error) {
 	u, err := url.Parse(c.Endpoint)
 	loopback := false
 	if err == nil {
-		loopback = u.Hostname() == "localhost"
+		loopback = strings.EqualFold(u.Hostname(), "localhost")
 		if ip := net.ParseIP(u.Hostname()); ip != nil {
 			loopback = ip.IsLoopback()
 		}
 	}
-	if err != nil || u.Host == "" || u.User != nil || u.RawQuery != "" || u.Fragment != "" || (u.Path != "" && u.Path != "/") ||
+	if err != nil || u.Hostname() == "" || u.User != nil || u.RawQuery != "" || u.Fragment != "" || (u.Path != "" && u.Path != "/") ||
 		(u.Scheme != "https" && !(u.Scheme == "http" && loopback)) {
 		return nil, errors.New("archive S3 endpoint must be an HTTPS origin (HTTP allowed only on loopback)")
 	}
@@ -139,7 +139,8 @@ func New(c Config) (*Store, error) {
 }
 
 func (s *Store) URI(taskID, archiveID int64, checksum string) string {
-	return "s3://" + s.bucket + "/" + s.prefix + fmt.Sprintf("task-%d-%d-%s.tar.zst", taskID, archiveID, checksum)
+	u := url.URL{Scheme: "s3", Host: s.bucket, Path: "/" + s.prefix + fmt.Sprintf("task-%d-%d-%s.tar.zst", taskID, archiveID, checksum)}
+	return u.String()
 }
 
 func (s *Store) key(uri string) (string, error) {

@@ -33,7 +33,7 @@ const nextConfig = {
       : {
           // Dev: reverse-proxy /api/* to the Go backend (default :8787, override with AUTOPENTEST_API).
           async rewrites() {
-            const backend = (process.env.AUTOPENTEST_API ?? "http://localhost:8787").replace(/\/+$/, "");
+            const backend = (process.env.AUTOPENTEST_API?.trim() || "http://localhost:8787").replace(/\/+$/, "");
             return [{ source: "/api/:path*", destination: `${backend}/api/:path*` }];
           },
         }),

@@ -36,6 +36,16 @@ func TestTruncateBytesKeepsValidUTF8(t *testing.T) {
 	}
 }
 
+func TestTruncateBytesNormalizesInvalidUTF8WithinBudget(t *testing.T) {
+	input := string([]byte{'a', 0xff, 'b'})
+	if got := TruncateBytes(input, 5); got != "a\uFFFDb" {
+		t.Fatalf("got %q", got)
+	}
+	if got := TruncateBytes(input, 4); got != "a…" {
+		t.Fatalf("normalization exceeded the byte limit: %q", got)
+	}
+}
+
 func TestTruncateBytesZeroMeansUnlimited(t *testing.T) {
 	long := strings.Repeat("x", 10000)
 	if got := TruncateBytes(long, 0); got != long {
@@ -86,6 +96,20 @@ func TestOneLineCollapsesWhitespace(t *testing.T) {
 	got = OneLine("éééééééééé", 4)
 	if n := utf8.RuneCountInString(got); n != 4 {
 		t.Fatalf("expected 4 characters, got %d (%q)", n, got)
+	}
+}
+
+func TestTruncateRunesKeepsSupplementaryCharacters(t *testing.T) {
+	cases := []struct {
+		limit int
+		want  string
+	}{
+		{1, "𠮷"}, {2, "𠮷…"}, {3, "𠮷猫é"},
+	}
+	for _, c := range cases {
+		if got := TruncateRunes("𠮷猫é", c.limit); got != c.want {
+			t.Fatalf("limit %d: got %q, want %q", c.limit, got, c.want)
+		}
 	}
 }
 
@@ -156,5 +180,14 @@ func TestTruncateHTMLNeverCutsEntity(t *testing.T) {
 		if strings.Contains(got, "&amp\x00") {
 			t.Fatalf("max=%d: malformed entity appeared", max)
 		}
+	}
+}
+
+func TestNotificationTitleFallsBackForWhitespaceOnlyFields(t *testing.T) {
+	if got := (Item{Name: "  ", VulnClass: " Sample "}).Title(); got != "Sample" {
+		t.Fatalf("title = %q, want class", got)
+	}
+	if got := (Item{Name: "\t", VulnClass: " "}).Title(); got != "(unnamed vulnerability)" {
+		t.Fatalf("title = %q, want placeholder", got)
 	}
 }
