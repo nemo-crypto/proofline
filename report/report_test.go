@@ -443,3 +443,16 @@ func TestFindingsSummaryCountsEntriesWithoutKnownSeverity(t *testing.T) {
 		}
 	}
 }
+
+func TestReportHeadingsStayOnOneLine(t *testing.T) {
+	record := &db.DBFinding{Name: "First line\r\n second line"}
+	for _, output := range []string{
+		Markdown(Input{Findings: []*db.Node{reportNode(1, "low", record.Name)}}),
+		FindingsMarkdown([]*db.DBFinding{record}, time.Time{}),
+		SingleFindingMarkdown(record, time.Time{}),
+	} {
+		if !strings.Contains(output, "First line second line\n") {
+			t.Fatalf("expected one complete heading, got %q", output)
+		}
+	}
+}
