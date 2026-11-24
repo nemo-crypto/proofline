@@ -196,7 +196,7 @@ func TestMarkdownDetailedReportFenceBalance(t *testing.T) {
 	// An unclosed ```http fence that opens well before the 8 KiB cap and is still
 	// open where the body gets cut.
 	unclosed := "## Evidence\n\n```http\n" + strings.Repeat("GET /orders/7 HTTP/1.1\nHost: victim\n\n", 400)
-	if !unbalancedFence(strings.TrimSpace(unclosed[:reportMaxReportBytes])) {
+	if openFence(strings.TrimSpace(unclosed[:reportMaxReportBytes])) == "" {
 		t.Fatalf("fixture does not cut inside an open fence")
 	}
 	rows := map[int64]db.FindingQuality{
@@ -399,5 +399,15 @@ func TestFindingFilenameUnicodeAndIDSuffix(t *testing.T) {
 	}
 	if !strings.HasSuffix(f1, "_101.md") || !strings.HasSuffix(f2, "_102.md") || f1 == f2 {
 		t.Fatalf("expected preserved distinct ID suffixes: f1=%q f2=%q", f1, f2)
+	}
+}
+
+func TestTruncatedDetailedReportClosesMatchingFence(t *testing.T) {
+	for _, fence := range []string{"~~~~", "````"} {
+		body := fence + "text\n```\n" + strings.Repeat("sample text\n", 100)
+		output := detailedReportLimit(body, "Report", 64)
+		if !strings.Contains(output, "\n"+fence+"\n\n_Detailed report truncated") {
+			t.Fatalf("missing closing fence %q in %q", fence, output)
+		}
 	}
 }
