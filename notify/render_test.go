@@ -36,6 +36,16 @@ func TestTruncateBytesKeepsValidUTF8(t *testing.T) {
 	}
 }
 
+func TestTruncateBytesNormalizesInvalidUTF8WithinBudget(t *testing.T) {
+	input := string([]byte{'a', 0xff, 'b'})
+	if got := TruncateBytes(input, 5); got != "a\uFFFDb" {
+		t.Fatalf("got %q", got)
+	}
+	if got := TruncateBytes(input, 4); got != "a…" {
+		t.Fatalf("normalization exceeded the byte limit: %q", got)
+	}
+}
+
 func TestTruncateBytesZeroMeansUnlimited(t *testing.T) {
 	long := strings.Repeat("x", 10000)
 	if got := TruncateBytes(long, 0); got != long {
