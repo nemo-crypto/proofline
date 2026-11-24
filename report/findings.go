@@ -23,7 +23,7 @@ import (
 // sortFindingsForExport sorts by severity descending, then by time descending, consistent with the summary report's grouping.
 func sortFindingsForExport(fs []*db.DBFinding) {
 	sort.SliceStable(fs, func(i, j int) bool {
-		ri, rj := sevRank[fs[i].Severity], sevRank[fs[j].Severity]
+		ri, rj := severityRank(fs[i].Severity), severityRank(fs[j].Severity)
 		if ri != rj {
 			return ri < rj // smaller sevRank means more severe
 		}

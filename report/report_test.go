@@ -402,6 +402,24 @@ func TestFindingFilenameUnicodeAndIDSuffix(t *testing.T) {
 	}
 }
 
+func TestReportSortsUnknownSeverityAfterKnownSeverity(t *testing.T) {
+	task := Markdown(Input{Findings: []*db.Node{
+		reportNode(1, "legacy", "Older record"),
+		reportNode(2, "low", "Low priority record"),
+	}})
+	batch := FindingsMarkdown([]*db.DBFinding{
+		{Severity: "legacy", Name: "Older record"},
+		{Severity: "low", Name: "Low priority record"},
+	}, time.Time{})
+	for _, output := range []string{task, batch} {
+		known := strings.Index(output, "Low priority record")
+		unknown := strings.Index(output, "Older record")
+		if known == -1 || unknown == -1 || known >= unknown {
+			t.Fatalf("expected known severity before unknown severity, got %q", output)
+		}
+	}
+}
+
 func TestExportKeepsMarkdownFenceInEvidence(t *testing.T) {
 	record := &db.DBFinding{Evidence: "first line\n````\nlast line"}
 	want := "`````\nfirst line\n````\nlast line\n`````\n"

@@ -61,7 +61,14 @@ func parseFinding(n *db.Node) findingView {
 	return findingView{VulnClass: p.VulnClass, Name: p.Name, Severity: p.Severity, Summary: p.Summary, PoC: p.Evidence.PoC}
 }
 
-var sevRank = map[string]int{"critical": 0, "high": 1, "medium": 2, "low": 3, "": 4}
+var sevRank = map[string]int{"critical": 0, "high": 1, "medium": 2, "low": 3}
+
+func severityRank(severity string) int {
+	if rank, ok := sevRank[severity]; ok {
+		return rank
+	}
+	return len(sevRank)
+}
 
 // writeLiteralBlock keeps recorded text literal even when it contains its own
 // Markdown fences.
@@ -116,7 +123,7 @@ func Markdown(in Input) string {
 			v.Q = qualityFromRows(n.ID, in.Quality)
 			fs = append(fs, v)
 		}
-		sort.SliceStable(fs, func(i, j int) bool { return sevRank[fs[i].Severity] < sevRank[fs[j].Severity] })
+		sort.SliceStable(fs, func(i, j int) bool { return severityRank(fs[i].Severity) < severityRank(fs[j].Severity) })
 		for i, f := range fs {
 			fmt.Fprintf(&b, "### %d. [%s] %s\n\n", i+1, strings.ToUpper(nz(f.Severity, "info")), nz(f.Name, nz(f.VulnClass, "Uncategorized")))
 			fmt.Fprintf(&b, "%s\n\n", nz(f.Summary, ""))
