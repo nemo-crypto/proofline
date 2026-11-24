@@ -89,6 +89,20 @@ func TestOneLineCollapsesWhitespace(t *testing.T) {
 	}
 }
 
+func TestTruncateRunesKeepsSupplementaryCharacters(t *testing.T) {
+	cases := []struct {
+		limit int
+		want  string
+	}{
+		{1, "𠮷"}, {2, "𠮷…"}, {3, "𠮷猫é"},
+	}
+	for _, c := range cases {
+		if got := TruncateRunes("𠮷猫é", c.limit); got != c.want {
+			t.Fatalf("limit %d: got %q, want %q", c.limit, got, c.want)
+		}
+	}
+}
+
 func TestTruncateHTMLNeverCutsTagInHalf(t *testing.T) {
 	// Truncating HTML directly can cut out a fragment like `<a href="htt`, and
 	// the platform will reject the whole message.
