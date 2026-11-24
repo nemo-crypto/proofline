@@ -871,6 +871,8 @@ CGO_ENABLED=0 go build -tags embedui -o artex ./cmd/artex
 
 ## Development
 
+The frontend CI uses Node.js 22. Use that version with npm when running the local web build or checks.
+
 ```bash
 ./dev.sh    # backend(:8787) + traffic proxy(:8788) + frontend next dev(:3000) → http://localhost:3000
 ```
