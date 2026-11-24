@@ -108,6 +108,19 @@ else
   ARTEX_TARGETS="${ARTEX_TARGETS:-${ARTEX_TARGET_OS}/${ARTEX_TARGET_ARCH}}"
 fi
 
+IFS=',' read -r -a raw_targets <<< "$ARTEX_TARGETS"
+targets=()
+for target in ${raw_targets[@]+"${raw_targets[@]}"}; do
+  target="${target//[[:space:]]/}"
+  if [ -n "$target" ]; then
+    targets+=("$target")
+  fi
+done
+[ -n "${targets[0]:-}" ] || die "ARTEX_TARGETS must contain at least one build target"
+if [ "$ARTEX_RELEASE" != "1" ] && [ -n "${ARTEX_OUTPUT:-}" ] && [ "${#targets[@]}" -ne 1 ]; then
+  die "ARTEX_OUTPUT requires exactly one build target"
+fi
+
 if [ "${ARTEX_SKIP_FRONTEND:-0}" = "1" ]; then
   [ -d server/webui/dist ] || die "ARTEX_SKIP_FRONTEND=1 but server/webui/dist does not exist"
 else
@@ -250,14 +263,7 @@ write_checksums() {
 mkdir -p "$ARTEX_OUTPUT_DIR"
 if [ "$ARTEX_PACKAGE" = "1" ]; then mkdir -p "$ARTEX_PACKAGE_DIR"; fi
 
-old_ifs="$IFS"
-IFS=','
-read -r -a targets <<< "$ARTEX_TARGETS"
-IFS="$old_ifs"
-[ "${#targets[@]}" -gt 0 ] || die "ARTEX_TARGETS must not be empty"
 for target in "${targets[@]}"; do
-  target="${target//[[:space:]]/}"
-  [ -n "$target" ] || continue
   build_target "$target"
 done
 
