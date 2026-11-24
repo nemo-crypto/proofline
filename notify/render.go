@@ -60,14 +60,22 @@ func TruncateRunes(s string, max int) string {
 	if max <= 0 {
 		return s
 	}
-	runes := []rune(s)
-	if len(runes) <= max {
-		return s
+	var count, cutoff int
+	for offset := range s {
+		if count == max {
+			if max == 1 {
+				return string([]rune(s[:offset]))
+			}
+			prefix := s[:cutoff]
+			if !utf8.ValidString(prefix) {
+				prefix = string([]rune(prefix))
+			}
+			return prefix + ellipsis
+		}
+		cutoff = offset
+		count++
 	}
-	if max <= 1 {
-		return string(runes[:max])
-	}
-	return string(runes[:max-1]) + ellipsis
+	return s
 }
 
 // TruncateHTML truncates an HTML fragment by character count and guarantees no
