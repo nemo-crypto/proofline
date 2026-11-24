@@ -126,12 +126,15 @@ func Load() (Config, error) {
 	if err != nil {
 		return Config{}, fmt.Errorf("read config file %s: %w", path, err)
 	}
-	var disk struct {
+	var disk *struct {
 		Config
 		LegacyTaskUserAgents json.RawMessage `json:"assessment_identification"`
 	}
 	if err := json.Unmarshal(b, &disk); err != nil {
 		return Config{}, fmt.Errorf("parse config file %s: %w", path, err)
+	}
+	if disk == nil {
+		return Config{}, fmt.Errorf("parse config file %s: expected a JSON object", path)
 	}
 	if disk.LegacyTaskUserAgents != nil {
 		return Config{}, fmt.Errorf("parse config file %s: assessment_identification was replaced by task_user_agents. Move each task entry to task_user_agents with its origins list", path)
