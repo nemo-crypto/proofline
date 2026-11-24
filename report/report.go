@@ -61,7 +61,32 @@ func parseFinding(n *db.Node) findingView {
 	return findingView{VulnClass: p.VulnClass, Name: p.Name, Severity: p.Severity, Summary: p.Summary, PoC: p.Evidence.PoC}
 }
 
-var sevRank = map[string]int{"critical": 0, "high": 1, "medium": 2, "low": 3, "": 4}
+var sevRank = map[string]int{"critical": 0, "high": 1, "medium": 2, "low": 3}
+
+func severityRank(severity string) int {
+	if rank, ok := sevRank[severity]; ok {
+		return rank
+	}
+	return len(sevRank)
+}
+
+// writeLiteralBlock keeps recorded text literal even when it contains its own
+// Markdown fences.
+func writeLiteralBlock(b *strings.Builder, text string) {
+	fenceLength, run := 3, 0
+	for _, ch := range text {
+		if ch != '`' {
+			run = 0
+			continue
+		}
+		run++
+		if run >= fenceLength {
+			fenceLength = run + 1
+		}
+	}
+	fence := strings.Repeat("`", fenceLength)
+	fmt.Fprintf(b, "%s\n%s\n%s\n\n", fence, text, fence)
+}
 
 // Markdown renders the report.
 func Markdown(in Input) string {
@@ -98,13 +123,14 @@ func Markdown(in Input) string {
 			v.Q = qualityFromRows(n.ID, in.Quality)
 			fs = append(fs, v)
 		}
-		sort.SliceStable(fs, func(i, j int) bool { return sevRank[fs[i].Severity] < sevRank[fs[j].Severity] })
+		sort.SliceStable(fs, func(i, j int) bool { return severityRank(fs[i].Severity) < severityRank(fs[j].Severity) })
 		for i, f := range fs {
 			fmt.Fprintf(&b, "### %d. [%s] %s\n\n", i+1, strings.ToUpper(nz(f.Severity, "info")), nz(f.Name, nz(f.VulnClass, "Uncategorized")))
 			fmt.Fprintf(&b, "%s\n\n", nz(f.Summary, ""))
 			b.WriteString(qualityBullets(f.Q, true)) // honest proof strength, including its gaps
 			if f.PoC != "" {
-				fmt.Fprintf(&b, "**PoC / Evidence:**\n\n```\n%s\n```\n\n", f.PoC)
+				b.WriteString("**PoC / Evidence:**\n\n")
+				writeLiteralBlock(&b, f.PoC)
 			}
 			b.WriteString(qualityNarrative(f.Q)) // why it holds / what failed, only when written
 			// The same warning, from the same helper, that the findings export prints: a
