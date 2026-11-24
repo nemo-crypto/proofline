@@ -110,7 +110,8 @@ func assetCompressible(ctype string) bool {
 
 // gzipAccepted reports whether the client accepts gzip with a non-zero q-value.
 func gzipAccepted(r *http.Request) bool {
-	for _, part := range strings.Split(r.Header.Get("Accept-Encoding"), ",") {
+	wildcardAccepted := false
+	for _, part := range strings.Split(strings.Join(r.Header.Values("Accept-Encoding"), ","), ",") {
 		fields := strings.Split(strings.TrimSpace(part), ";")
 		coding := strings.ToLower(strings.TrimSpace(fields[0]))
 		if coding != "gzip" && coding != "*" {
@@ -125,11 +126,12 @@ func gzipAccepted(r *http.Request) bool {
 				}
 			}
 		}
-		if q > 0 {
-			return true
+		if coding == "gzip" {
+			return q > 0
 		}
+		wildcardAccepted = q > 0
 	}
-	return false
+	return wildcardAccepted
 }
 
 // serveWebAsset writes name from fsys with validators, and gzipped when the
