@@ -432,3 +432,14 @@ func TestExportKeepsMarkdownFenceInEvidence(t *testing.T) {
 		}
 	}
 }
+
+func TestFindingsSummaryCountsEntriesWithoutKnownSeverity(t *testing.T) {
+	output := FindingsMarkdown([]*db.DBFinding{
+		{Severity: "high"}, {Severity: "legacy"}, {},
+	}, time.Time{})
+	for _, row := range []string{"| High | 1 |", "| Other | 2 |"} {
+		if !strings.Contains(output, row) {
+			t.Fatalf("missing %q from summary:\n%s", row, output)
+		}
+	}
+}
