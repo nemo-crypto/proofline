@@ -229,6 +229,7 @@ function TaskTemplateManager({
                     <button
                       key={template.id}
                       type="button"
+                      aria-current={selectedID === template.id ? true : undefined}
                       className={cn(
                         "min-w-0 rounded-md px-2.5 py-2 text-left transition-colors",
                         selectedID === template.id ? "bg-accent text-accent-foreground" : "hover:bg-accent/50",

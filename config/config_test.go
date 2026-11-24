@@ -139,6 +139,27 @@ func TestMalformedConfigIsAnError(t *testing.T) {
 	}
 }
 
+func TestSkillDirReportsCreationFailure(t *testing.T) {
+	file := filepath.Join(t.TempDir(), "file")
+	if err := os.WriteFile(file, nil, 0o600); err != nil {
+		t.Fatal(err)
+	}
+	t.Setenv("ARTEX_SKILL_DIR", filepath.Join(file, "skills"))
+	if dir, err := SkillDir(); err == nil || dir != "" {
+		t.Fatalf("expected a directory creation error, got %q, %v", dir, err)
+	}
+}
+
+func TestPostgresDSNFormatsIPv6Host(t *testing.T) {
+	for _, host := range []string{"2001:db8::1", "[2001:db8::1]"} {
+		dsn := (Database{Host: host, Port: 5433, DBName: "app"}).buildDSN()
+		u, err := url.Parse(dsn)
+		if err != nil || u.Hostname() != "2001:db8::1" || u.Port() != "5433" {
+			t.Fatalf("invalid IPv6 connection URL %q: %v", dsn, err)
+		}
+	}
+}
+
 func TestNullConfigIsAnError(t *testing.T) {
 	path := filepath.Join(t.TempDir(), "config.json")
 	if err := os.WriteFile(path, []byte("null"), 0o600); err != nil {

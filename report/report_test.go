@@ -196,7 +196,7 @@ func TestMarkdownDetailedReportFenceBalance(t *testing.T) {
 	// An unclosed ```http fence that opens well before the 8 KiB cap and is still
 	// open where the body gets cut.
 	unclosed := "## Evidence\n\n```http\n" + strings.Repeat("GET /orders/7 HTTP/1.1\nHost: victim\n\n", 400)
-	if !unbalancedFence(strings.TrimSpace(unclosed[:reportMaxReportBytes])) {
+	if openFence(strings.TrimSpace(unclosed[:reportMaxReportBytes])) == "" {
 		t.Fatalf("fixture does not cut inside an open fence")
 	}
 	rows := map[int64]db.FindingQuality{
@@ -399,5 +399,70 @@ func TestFindingFilenameUnicodeAndIDSuffix(t *testing.T) {
 	}
 	if !strings.HasSuffix(f1, "_101.md") || !strings.HasSuffix(f2, "_102.md") || f1 == f2 {
 		t.Fatalf("expected preserved distinct ID suffixes: f1=%q f2=%q", f1, f2)
+	}
+}
+
+func TestReportSortsUnknownSeverityAfterKnownSeverity(t *testing.T) {
+	task := Markdown(Input{Findings: []*db.Node{
+		reportNode(1, "legacy", "Older record"),
+		reportNode(2, "low", "Low priority record"),
+	}})
+	batch := FindingsMarkdown([]*db.DBFinding{
+		{Severity: "legacy", Name: "Older record"},
+		{Severity: "low", Name: "Low priority record"},
+	}, time.Time{})
+	for _, output := range []string{task, batch} {
+		known := strings.Index(output, "Low priority record")
+		unknown := strings.Index(output, "Older record")
+		if known == -1 || unknown == -1 || known >= unknown {
+			t.Fatalf("expected known severity before unknown severity, got %q", output)
+		}
+	}
+}
+
+func TestExportKeepsMarkdownFenceInEvidence(t *testing.T) {
+	record := &db.DBFinding{Evidence: "first line\n````\nlast line"}
+	want := "`````\nfirst line\n````\nlast line\n`````\n"
+	for _, output := range []string{
+		FindingsMarkdown([]*db.DBFinding{record}, time.Time{}),
+		SingleFindingMarkdown(record, time.Time{}),
+	} {
+		if !strings.Contains(output, want) {
+			t.Fatalf("evidence was not kept in a single Markdown block: %q", output)
+		}
+	}
+}
+
+func TestFindingsSummaryCountsEntriesWithoutKnownSeverity(t *testing.T) {
+	output := FindingsMarkdown([]*db.DBFinding{
+		{Severity: "high"}, {Severity: "legacy"}, {},
+	}, time.Time{})
+	for _, row := range []string{"| High | 1 |", "| Other | 2 |"} {
+		if !strings.Contains(output, row) {
+			t.Fatalf("missing %q from summary:\n%s", row, output)
+		}
+	}
+}
+
+func TestReportHeadingsStayOnOneLine(t *testing.T) {
+	record := &db.DBFinding{Name: "First line\r\n second line"}
+	for _, output := range []string{
+		Markdown(Input{Findings: []*db.Node{reportNode(1, "low", record.Name)}}),
+		FindingsMarkdown([]*db.DBFinding{record}, time.Time{}),
+		SingleFindingMarkdown(record, time.Time{}),
+	} {
+		if !strings.Contains(output, "First line second line\n") {
+			t.Fatalf("expected one complete heading, got %q", output)
+		}
+	}
+}
+
+func TestTruncatedDetailedReportClosesMatchingFence(t *testing.T) {
+	for _, fence := range []string{"~~~~", "````"} {
+		body := fence + "text\n```\n" + strings.Repeat("sample text\n", 100)
+		output := detailedReportLimit(body, "Report", 64)
+		if !strings.Contains(output, "\n"+fence+"\n\n_Detailed report truncated") {
+			t.Fatalf("missing closing fence %q in %q", fence, output)
+		}
 	}
 }

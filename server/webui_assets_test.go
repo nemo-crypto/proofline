@@ -260,3 +260,19 @@ func TestServeWebAssetMissing(t *testing.T) {
 		t.Error("missing asset reported as served")
 	}
 }
+
+func TestGzipAcceptedExplicitPreferenceOverridesWildcard(t *testing.T) {
+	for _, headers := range [][]string{
+		{"*;q=1, gzip;q=0"},
+		{"gzip;q=0, *;q=1"},
+		{"*;q=1", "gzip;q=0"},
+	} {
+		req := httptest.NewRequest(http.MethodGet, "/", nil)
+		for _, header := range headers {
+			req.Header.Add("Accept-Encoding", header)
+		}
+		if gzipAccepted(req) {
+			t.Errorf("gzip is forbidden by Accept-Encoding %q", headers)
+		}
+	}
+}

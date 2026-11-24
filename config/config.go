@@ -7,6 +7,7 @@ import (
 	"errors"
 	"fmt"
 	"io/fs"
+	"net"
 	"net/url"
 	"os"
 	"path/filepath"
@@ -161,7 +162,9 @@ func SkillDir() (string, error) {
 			d = filepath.Join(BaseDir(), "skills")
 		}
 	}
-	_ = os.MkdirAll(d, 0o755)
+	if err := os.MkdirAll(d, 0o755); err != nil {
+		return "", fmt.Errorf("create skill directory %s: %w", d, err)
+	}
 	return d, nil
 }
 
@@ -243,7 +246,7 @@ func (d Database) buildDSN() string {
 	}
 	u := url.URL{
 		Scheme: "postgres",
-		Host:   host + ":" + strconv.Itoa(port),
+		Host:   net.JoinHostPort(strings.TrimSuffix(strings.TrimPrefix(host, "["), "]"), strconv.Itoa(port)),
 		Path:   "/" + d.DBName,
 	}
 	if d.User != "" {

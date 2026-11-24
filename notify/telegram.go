@@ -126,13 +126,13 @@ func telegramHTML(m Message) (string, int) {
 			footer = fmt.Sprintf("\n\n<a href=\"%s\">View all on the platform</a>", telegramEscapeAttr(m.HomeURL))
 		}
 		kept := packItemCount(m.Items, telegramTextLimit, telegramReservedRunes, footer, runeSize, func(it Item, idx int) string {
-			return telegramBatchLine(it, idx+1, lim)
+			return telegramBatchLineHTML(it, idx+1, lim)
 		})
 		items := m.Items[:kept]
 		b.Reset()
 		b.WriteString("<b>" + telegramEscape(telegramBatchTitle(m, items, len(m.Items))) + "</b>")
 		for i, it := range items {
-			b.WriteString("\n" + telegramEscape(telegramBatchLine(it, i+1, lim)))
+			b.WriteString(telegramBatchLineHTML(it, i+1, lim))
 		}
 		b.WriteString(footer)
 		return TruncateHTML(b.String(), telegramTextLimit), kept
@@ -163,6 +163,10 @@ func telegramHTML(m Message) (string, int) {
 // telegramReservedRunes is reserved for the message title and a possible
 // truncation notice (in characters).
 const telegramReservedRunes = 160
+
+func telegramBatchLineHTML(it Item, idx int, lim Limits) string {
+	return "\n" + telegramEscape(telegramBatchLine(it, idx, lim))
+}
 
 // telegramBatchLine renders one entry of a digest (unescaped; the caller escapes
 // it uniformly).
