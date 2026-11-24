@@ -200,8 +200,8 @@ func detailedReportLimit(body, heading string, limit int) string {
 		// truncation note — and every section after it, other findings included — into
 		// the stale code block. Close the fence before the note so the rest of the
 		// document still parses as the document.
-		if unbalancedFence(cut) {
-			cut += "\n```"
+		if fence := openFence(cut); fence != "" {
+			cut += "\n" + fence
 		}
 		return heading + "\n\n" + cut +
 			fmt.Sprintf("\n\n_Detailed report truncated at %d KiB; read the full text from the finding record._\n\n", limit>>10)
@@ -209,18 +209,35 @@ func detailedReportLimit(body, heading string, limit int) string {
 	return heading + "\n\n" + s + "\n\n"
 }
 
-// unbalancedFence reports whether s ends inside an open fenced code block, i.e.
-// whether it holds an odd number of fence delimiters. A delimiter is a line whose
-// first non-space content is ``` — an opening fence with an info string and a bare
-// closing fence both count, which is exactly what a Markdown renderer pairs up.
-func unbalancedFence(s string) bool {
-	fences := 0
+// openFence returns the delimiter needed to close the final fenced block.
+func openFence(s string) string {
+	var fence string
 	for _, line := range strings.Split(s, "\n") {
-		if strings.HasPrefix(strings.TrimLeft(line, " \t"), "```") {
-			fences++
+		trimmed := strings.TrimLeft(line, " ")
+		if len(line)-len(trimmed) > 3 || len(trimmed) < 3 {
+			continue
+		}
+		mark := trimmed[0]
+		if mark != '`' && mark != '~' {
+			continue
+		}
+		n := 1
+		for n < len(trimmed) && trimmed[n] == mark {
+			n++
+		}
+		if n < 3 {
+			continue
+		}
+		rest := trimmed[n:]
+		if fence == "" {
+			if mark == '~' || !strings.ContainsRune(rest, '`') {
+				fence = trimmed[:n]
+			}
+		} else if mark == fence[0] && n >= len(fence) && strings.TrimSpace(rest) == "" {
+			fence = ""
 		}
 	}
-	return fences%2 == 1
+	return fence
 }
 
 // verificationLabel renders a verification state for a human-readable document.

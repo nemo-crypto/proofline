@@ -20,6 +20,7 @@ const ellipsis = "…"
 // max<=0 means unlimited. An ellipsis is appended after truncation, unless max is
 // too small to fit the ellipsis.
 func TruncateBytes(s string, max int) string {
+	s = strings.ToValidUTF8(s, "\uFFFD")
 	if max <= 0 || len(s) <= max {
 		return s
 	}
@@ -59,14 +60,18 @@ func TruncateRunes(s string, max int) string {
 	if max <= 0 {
 		return s
 	}
-	runes := []rune(s)
-	if len(runes) <= max {
-		return s
+	var count, cutoff int
+	for offset := range s {
+		if count == max {
+			if max == 1 {
+				return s[:offset]
+			}
+			return s[:cutoff] + ellipsis
+		}
+		cutoff = offset
+		count++
 	}
-	if max <= 1 {
-		return string(runes[:max])
-	}
-	return string(runes[:max-1]) + ellipsis
+	return s
 }
 
 // TruncateHTML truncates an HTML fragment by character count and guarantees no
