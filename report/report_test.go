@@ -419,3 +419,16 @@ func TestReportSortsUnknownSeverityAfterKnownSeverity(t *testing.T) {
 		}
 	}
 }
+
+func TestExportKeepsMarkdownFenceInEvidence(t *testing.T) {
+	record := &db.DBFinding{Evidence: "first line\n````\nlast line"}
+	want := "`````\nfirst line\n````\nlast line\n`````\n"
+	for _, output := range []string{
+		FindingsMarkdown([]*db.DBFinding{record}, time.Time{}),
+		SingleFindingMarkdown(record, time.Time{}),
+	} {
+		if !strings.Contains(output, want) {
+			t.Fatalf("evidence was not kept in a single Markdown block: %q", output)
+		}
+	}
+}
