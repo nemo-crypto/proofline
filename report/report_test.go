@@ -401,3 +401,12 @@ func TestFindingFilenameUnicodeAndIDSuffix(t *testing.T) {
 		t.Fatalf("expected preserved distinct ID suffixes: f1=%q f2=%q", f1, f2)
 	}
 }
+
+func TestFindingTitleFallsBackForBlankNames(t *testing.T) {
+	if got := findingTitle(&db.DBFinding{Name: " \t", VulnClass: " Class "}); got != "Class" {
+		t.Fatalf("title = %q, want class fallback", got)
+	}
+	if got := findingTitle(&db.DBFinding{Name: " ", VulnClass: " \n"}); got != "Uncategorized" {
+		t.Fatalf("title = %q, want default fallback", got)
+	}
+}
