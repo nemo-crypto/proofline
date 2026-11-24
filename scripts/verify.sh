@@ -15,7 +15,7 @@
 set -euo pipefail
 cd "$(dirname "$0")/.."
 
-usage() { sed -n '2,14p' "$0" | sed 's/^# \?//'; }
+usage() { sed -n '2,14p' "scripts/verify.sh" | sed 's/^# \?//'; }
 
 FULL=0
 GO_ONLY=0

@@ -18,7 +18,7 @@
 set -euo pipefail
 cd "$(dirname "$0")/.."
 
-usage() { sed -n '2,15p' "$0" | sed 's/^# \?//'; }
+usage() { sed -n '2,15p' "scripts/backup.sh" | sed 's/^# \?//'; }
 
 KEEP=14
 OUTPUT_DIR="backups"
