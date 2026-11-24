@@ -122,7 +122,7 @@ export function useSideQuestions(parent: string | null) {
   useEffect(() => {
     if (!open || !parent) return;
     void load();
-    const stopPolling = setVisibleInterval(() => void load(), 2000);
+    const stopPolling = setVisibleInterval(() => load(), 2000);
     return stopPolling;
   }, [open, parent, load]);
 
