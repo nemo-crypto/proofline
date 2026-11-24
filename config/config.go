@@ -106,7 +106,7 @@ func Path() string {
 	}
 	candidates = append(candidates, filepath.Join(BaseDir(), "config.json"))
 	for _, c := range candidates {
-		if _, err := os.Stat(c); err == nil {
+		if _, err := os.Stat(c); !errors.Is(err, fs.ErrNotExist) {
 			return c
 		}
 	}
