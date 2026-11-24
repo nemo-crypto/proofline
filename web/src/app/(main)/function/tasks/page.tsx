@@ -1763,7 +1763,7 @@ function TaskArchivesPanel({ onChanged }: { onChanged: () => void }) {
 
   React.useEffect(() => {
     void load();
-    const stopPolling = setVisibleInterval(() => void load(), 2_000);
+    const stopPolling = setVisibleInterval(() => load(), 2_000);
     return stopPolling;
   }, [load]);
 
