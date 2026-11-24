@@ -84,7 +84,7 @@ export const getInitials = (str: string): string => {
       .trim()
       .split(/\s+/)
       .filter(Boolean)
-      .map((word) => word[0])
+      .map((word) => String.fromCodePoint(word.codePointAt(0)!))
       .join("")
       .toUpperCase() || "?"
   );
