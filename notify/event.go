@@ -1,5 +1,7 @@
 package notify
 
+import "strings"
+
 // Snapshot is the contract for the notification_events.snapshot JSONB column.
 // The writer is the vulnerability persistence transaction in the db layer; the
 // readers are the delivery engine and filter matching in the server layer. The
@@ -54,11 +56,11 @@ func (i Item) IsStatusChange() bool { return i.FromStatus != "" || i.ToStatus !=
 // fall back to the vulnerability class vulnclass, and use a placeholder when both
 // are empty — never emit an empty title.
 func (i Item) Title() string {
-	if i.Name != "" {
-		return i.Name
+	if name := strings.TrimSpace(i.Name); name != "" {
+		return name
 	}
-	if i.VulnClass != "" {
-		return i.VulnClass
+	if class := strings.TrimSpace(i.VulnClass); class != "" {
+		return class
 	}
 	return "(unnamed vulnerability)"
 }
