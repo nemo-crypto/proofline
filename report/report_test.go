@@ -401,3 +401,10 @@ func TestFindingFilenameUnicodeAndIDSuffix(t *testing.T) {
 		t.Fatalf("expected preserved distinct ID suffixes: f1=%q f2=%q", f1, f2)
 	}
 }
+
+func TestWhitespaceOnlyReportIsNotMarkedStale(t *testing.T) {
+	q := Quality{Report: " \n\t", EvidenceVersion: 3, ReportEvidenceVersion: 1}
+	if q.ReportStale() {
+		t.Fatal("whitespace should not produce a stale report warning")
+	}
+}
