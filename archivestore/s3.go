@@ -139,7 +139,8 @@ func New(c Config) (*Store, error) {
 }
 
 func (s *Store) URI(taskID, archiveID int64, checksum string) string {
-	return "s3://" + s.bucket + "/" + s.prefix + fmt.Sprintf("task-%d-%d-%s.tar.zst", taskID, archiveID, checksum)
+	u := url.URL{Scheme: "s3", Host: s.bucket, Path: "/" + s.prefix + fmt.Sprintf("task-%d-%d-%s.tar.zst", taskID, archiveID, checksum)}
+	return u.String()
 }
 
 func (s *Store) key(uri string) (string, error) {
