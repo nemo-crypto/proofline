@@ -333,3 +333,17 @@ func minInt(a, b int) int {
 	}
 	return b
 }
+
+func TestTelegramPackingAccountsForHTMLEscapes(t *testing.T) {
+	m := batchMsg(10)
+	for i := range m.Items {
+		m.Items[i].Assets = []string{strings.Repeat("&", 320)}
+	}
+	body, kept := telegramHTML(m)
+	if kept != 2 || !strings.Contains(body, "next message") {
+		t.Fatalf("expected two whole escaped items, kept %d", kept)
+	}
+	if strings.Count(body, "&amp;") != 640 {
+		t.Fatal("rendered body lost part of an item marked as delivered")
+	}
+}
