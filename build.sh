@@ -35,7 +35,7 @@ Usage:
   ./build.sh --release               Build and package all supported targets
 
 Options:
-  --release              Build the amd64/arm64 targets for Linux, macOS, and Windows, and generate zips
+  --release              Build Linux and macOS (amd64/arm64) and Windows (amd64), and generate zips
   --target OS/ARCH       Set a single target, e.g. windows/amd64
   --upx                  Force UPX compression of the binary (may affect compatibility on some Linux environments)
   --no-compress          No UPX; use only Go linker trimming and zip compression
@@ -62,11 +62,8 @@ while [ "$#" -gt 0 ]; do
       [ "$#" -ge 2 ] || die "--target requires an OS/ARCH argument"
       target_arg="$2"
       case "$target_arg" in
-        */*)
-          ARTEX_TARGET_OS="${target_arg%%/*}"
-          ARTEX_TARGET_ARCH="${target_arg##*/}"
-          ARTEX_TARGETS="$target_arg"
-          ;;
+        /*|*/|*/*/*) die "target must be OS/ARCH, e.g. linux/amd64" ;;
+        */*) ARTEX_TARGETS="$target_arg" ;;
         *) die "target must be OS/ARCH, e.g. linux/amd64" ;;
       esac
       shift 2
@@ -109,6 +106,19 @@ else
   ARTEX_TARGET_OS="${ARTEX_TARGET_OS:-$(GOSUMDB="$ARTEX_GOSUMDB" go env GOOS)}"
   ARTEX_TARGET_ARCH="${ARTEX_TARGET_ARCH:-$(GOSUMDB="$ARTEX_GOSUMDB" go env GOARCH)}"
   ARTEX_TARGETS="${ARTEX_TARGETS:-${ARTEX_TARGET_OS}/${ARTEX_TARGET_ARCH}}"
+fi
+
+IFS=',' read -r -a raw_targets <<< "$ARTEX_TARGETS"
+targets=()
+for target in ${raw_targets[@]+"${raw_targets[@]}"}; do
+  target="${target//[[:space:]]/}"
+  if [ -n "$target" ]; then
+    targets+=("$target")
+  fi
+done
+[ -n "${targets[0]:-}" ] || die "ARTEX_TARGETS must contain at least one build target"
+if [ "$ARTEX_RELEASE" != "1" ] && [ -n "${ARTEX_OUTPUT:-}" ] && [ "${#targets[@]}" -ne 1 ]; then
+  die "ARTEX_OUTPUT requires exactly one build target"
 fi
 
 if [ "${ARTEX_SKIP_FRONTEND:-0}" = "1" ]; then
@@ -161,6 +171,8 @@ compress_binary() {
   ok "UPX compression done: $binary (${before} -> ${after} bytes)"
 }
 
+packaged_archives=()
+
 package_binary() {
   binary="$1"
   goos="$2"
@@ -188,12 +200,14 @@ package_binary() {
   if [ -f README.md ]; then cp README.md "$package_root/"; fi
   (cd "$ARTEX_PACKAGE_DIR" && zip -q -r -9 "$(basename "$archive")" "$(basename "$package_root")")
   rm -rf "$package_root"
+  packaged_archives+=("$(basename "$archive")")
   ok "Release archive: $archive"
 }
 
 build_target() {
   target="$1"
   case "$target" in
+    /*|*/|*/*/*) die "invalid target: $target (must be OS/ARCH)" ;;
     */*) ;;
     *) die "invalid target: $target (must be OS/ARCH)" ;;
   esac
@@ -233,11 +247,12 @@ build_target() {
 
 write_checksums() {
   [ "$ARTEX_PACKAGE" = "1" ] || return 0
+  [ "${#packaged_archives[@]}" -gt 0 ] || die "no release archives were generated"
   checksum_file="$ARTEX_PACKAGE_DIR/SHA256SUMS"
   if command -v sha256sum >/dev/null 2>&1; then
-    (cd "$ARTEX_PACKAGE_DIR" && for archive in *.zip; do sha256sum "$archive"; done > "$(basename "$checksum_file")")
+    (cd "$ARTEX_PACKAGE_DIR" && for archive in "${packaged_archives[@]}"; do sha256sum "$archive"; done > "$(basename "$checksum_file")")
   elif command -v shasum >/dev/null 2>&1; then
-    (cd "$ARTEX_PACKAGE_DIR" && for archive in *.zip; do shasum -a 256 "$archive"; done > "$(basename "$checksum_file")")
+    (cd "$ARTEX_PACKAGE_DIR" && for archive in "${packaged_archives[@]}"; do shasum -a 256 "$archive"; done > "$(basename "$checksum_file")")
   else
     warn "Neither sha256sum nor shasum detected; skipping SHA256SUMS"
     return 0
@@ -248,14 +263,7 @@ write_checksums() {
 mkdir -p "$ARTEX_OUTPUT_DIR"
 if [ "$ARTEX_PACKAGE" = "1" ]; then mkdir -p "$ARTEX_PACKAGE_DIR"; fi
 
-old_ifs="$IFS"
-IFS=','
-read -r -a targets <<< "$ARTEX_TARGETS"
-IFS="$old_ifs"
-[ "${#targets[@]}" -gt 0 ] || die "ARTEX_TARGETS must not be empty"
 for target in "${targets[@]}"; do
-  target="${target//[[:space:]]/}"
-  [ -n "$target" ] || continue
   build_target "$target"
 done
 

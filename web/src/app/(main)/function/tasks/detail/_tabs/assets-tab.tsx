@@ -431,7 +431,7 @@ export function AssetsTab({ taskId }: { taskId: string }) {
     };
     // Debounce DSL keystrokes; plain (re)loads and polling run immediately.
     const debounce = setTimeout(() => void load(), dsl ? 400 : 0);
-    const stopPolling = setVisibleInterval(() => void load(), 10_000);
+    const stopPolling = setVisibleInterval(() => load(), 10_000);
     return () => {
       active = false;
       clearTimeout(debounce);

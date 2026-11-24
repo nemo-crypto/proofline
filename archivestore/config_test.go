@@ -46,13 +46,13 @@ func TestArchiveStorageEnvironment(t *testing.T) {
 
 func TestArchiveEndpointValidation(t *testing.T) {
 	config := Config{Bucket: "test", AccessKey: "test-key", SecretKey: "test-secret"}
-	for _, endpoint := range []string{"https://objects.example.test", "http://127.0.0.1:9000", "http://127.0.0.2:9000", "http://[::1]:9000", "http://localhost:9000"} {
+	for _, endpoint := range []string{"https://objects.example.test", "http://127.0.0.1:9000", "http://127.0.0.2:9000", "http://[::1]:9000", "http://localhost:9000", "http://LOCALHOST:9000"} {
 		config.Endpoint = endpoint
 		if _, err := New(config); err != nil {
 			t.Errorf("rejected %s: %v", endpoint, err)
 		}
 	}
-	for _, endpoint := range []string{"http://objects.example.test", "https://user:test-secret@objects.example.test", "https://objects.example.test/bucket", "https://objects.example.test?token=test-secret", "https://objects.example.test#fragment"} {
+	for _, endpoint := range []string{"https://:9000", "http://objects.example.test", "https://user:test-secret@objects.example.test", "https://objects.example.test/bucket", "https://objects.example.test?token=test-secret", "https://objects.example.test#fragment"} {
 		config.Endpoint = endpoint
 		if _, err := New(config); err == nil {
 			t.Error("accepted endpoint with non-loopback HTTP, credentials, path, query or fragment")
@@ -85,5 +85,14 @@ func TestArchiveEncryptionConfiguration(t *testing.T) {
 	c.KMSKeyID = "arn:aws:kms:us-east-1:123456789012:key/test-key"
 	if _, err := New(c); err != nil {
 		t.Fatal(err)
+	}
+}
+
+func TestArchiveURIRoundTripsEscapedPrefix(t *testing.T) {
+	store := &Store{bucket: "test-bucket", prefix: "reports/100% ready/"}
+	uri := store.URI(1, 2, "checksum")
+	key, err := store.key(uri)
+	if err != nil || key != "reports/100% ready/task-1-2-checksum.tar.zst" {
+		t.Fatalf("URI %q did not round trip: %q, %v", uri, key, err)
 	}
 }

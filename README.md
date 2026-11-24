@@ -344,6 +344,12 @@ docker compose up -d --build
 # → http://localhost:8787
 ```
 
+The checkout build needs the Docker **buildx** plugin (BuildKit). Docker Desktop and
+get.docker.com include it; distro packages and Homebrew's docker CLI (Colima) may not. If
+`docker buildx version` fails, install `docker-buildx-plugin` or `docker-buildx`, or on macOS
+`brew install docker-buildx`. Without it the build stops at the first stage with
+`failed to parse platform`.
+
 The release workflow publishes a multi-arch image (`linux/amd64`, `linux/arm64`) to GitHub
 Container Registry on each `v*` tag, with tags `:latest`, `:v<version>`, and `:<version>`.
 v0.7.0 predates that step, so there is no `artex` package yet: until the next tagged release,
@@ -761,8 +767,9 @@ scripts/backup.sh --keep 7             # db only, keep 7
 Restore into a running stack:
 
 ```bash
-gunzip -c backups/artex-db-<timestamp>.sql.gz | docker compose exec -T postgres \
-  psql -U "$POSTGRES_USER" -d "$POSTGRES_DB"
+backup_file=backups/artex-db-20261123T000000Z.sql.gz  # use the file you want to restore
+gunzip -c "$backup_file" | docker compose exec -T postgres \
+  sh -c 'psql -v ON_ERROR_STOP=1 -U "$POSTGRES_USER" -d "$POSTGRES_DB"'
 ```
 
 Stored secrets (LLM API keys, proxies and gateway custom headers, MCP env, task credentials, notification channel config,
@@ -777,7 +784,7 @@ when the database holds encrypted secrets and no key is available.
 Daily cron example (03:20, operator crontab):
 
 ```
-20 3 * * * cd /path/to/ARTEX && scripts/backup.sh --with-data >> backups/backup.log 2>&1
+20 3 * * * cd /path/to/ARTEX && mkdir -p backups && scripts/backup.sh --with-data >> backups/backup.log 2>&1
 ```
 
 ### Updating and upgrading
@@ -863,6 +870,8 @@ CGO_ENABLED=0 go build -tags embedui -o artex ./cmd/artex
 ---
 
 ## Development
+
+The frontend CI uses Node.js 22. Use that version with npm when running the local web build or checks.
 
 ```bash
 ./dev.sh    # backend(:8787) + traffic proxy(:8788) + frontend next dev(:3000) → http://localhost:3000

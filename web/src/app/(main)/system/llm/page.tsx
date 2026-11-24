@@ -133,7 +133,7 @@ function PoolSheet({
   // The cooldown countdown is the remaining seconds computed by the backend — fetched on a timer only while the drawer is open and some profile is unhealthy, to keep it ticking.
   React.useEffect(() => {
     if (!open || !pool?.enabled || !pool.chain.some((m) => m.state !== "ok")) return;
-    const stopPolling = setVisibleInterval(() => void onReload(), 10_000);
+    const stopPolling = setVisibleInterval(() => onReload(), 10_000);
     return stopPolling;
   }, [open, pool, onReload]);
 
