@@ -31,8 +31,7 @@ while [ $# -gt 0 ]; do
     *) echo "unknown option: $1" >&2; usage >&2; exit 2 ;;
   esac
 done
-# 0* rejects 0, which would make prune delete the dump this run just wrote, and
-# leading zeros, which $((KEEP + 1)) would read as octal.
+# Keep the retention format as a positive decimal integer.
 case "$KEEP" in (*[!0-9]*|''|0*) echo "--keep must be a positive integer" >&2; exit 2 ;; esac
 
 # Compose reads .env for credentials; source it for the dump command too.
@@ -77,7 +76,7 @@ if [ "$WITH_DATA" -eq 1 ]; then
 fi
 
 prune() {
-  ls -1t "$OUTPUT_DIR"/$1 2>/dev/null | tail -n +$((KEEP + 1)) | while IFS= read -r old; do
+  ls -1t "$OUTPUT_DIR"/$1 2>/dev/null | awk -v keep="$KEEP" 'NR > keep' | while IFS= read -r old; do
     echo "pruning $old"
     rm -f "$old"
   done
