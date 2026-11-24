@@ -20,6 +20,7 @@ const ellipsis = "…"
 // max<=0 means unlimited. An ellipsis is appended after truncation, unless max is
 // too small to fit the ellipsis.
 func TruncateBytes(s string, max int) string {
+	s = strings.ToValidUTF8(s, "\uFFFD")
 	if max <= 0 || len(s) <= max {
 		return s
 	}
