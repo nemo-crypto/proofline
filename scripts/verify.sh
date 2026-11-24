@@ -15,7 +15,7 @@
 set -euo pipefail
 cd "$(dirname "$0")/.."
 
-usage() { sed -n '2,14p' "$0" | sed 's/^# \?//'; }
+usage() { sed -n '2,14p' "scripts/verify.sh" | sed 's/^# \?//'; }
 
 FULL=0
 GO_ONLY=0
@@ -135,6 +135,11 @@ if want_web; then
   run_step "web upload tests" bash -c 'cd web && npm run test:upload'
   run_step "web shell exit-status tests" npm --prefix web run test:bash
   run_step "web traffic stream tests" bash -c 'cd web && npm run test:traffic-stream'
+  run_step "web activity merge tests" node --test web/src/lib/activity-merge.test.mjs
+  run_step "web chat mention tests" node --test web/src/lib/chat-mentions.test.mjs
+  run_step "web report link tests" node --test web/src/lib/http-href.test.mjs
+  run_step "extension background syntax" node --check extension/background.js
+  run_step "extension popup syntax" node --check extension/popup.js
   if [ "$FULL" -eq 1 ]; then
     run_step "web static build" bash -c 'cd web && npm run build:static'
   fi

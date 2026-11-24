@@ -45,8 +45,9 @@ func ParseFilter(raw []byte) Filter {
 	if len(raw) == 0 {
 		return f
 	}
-	// On parse failure f stays at its zero value, i.e. no filtering.
-	_ = json.Unmarshal(raw, &f)
+	if err := json.Unmarshal(raw, &f); err != nil {
+		return Filter{}
+	}
 	return f
 }
 

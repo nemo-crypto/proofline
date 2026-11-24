@@ -159,7 +159,9 @@ func SkillDir() (string, error) {
 			d = filepath.Join(BaseDir(), "skills")
 		}
 	}
-	_ = os.MkdirAll(d, 0o755)
+	if err := os.MkdirAll(d, 0o755); err != nil {
+		return "", fmt.Errorf("create skill directory %s: %w", d, err)
+	}
 	return d, nil
 }
 
