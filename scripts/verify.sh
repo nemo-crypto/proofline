@@ -122,6 +122,14 @@ if want_go; then
 fi
 
 if want_web; then
+  require_cmd node
+  if ! node -e '
+    const [major, minor] = process.versions.node.split(".").map(Number);
+    process.exit(major > 22 || (major === 22 && minor >= 18) ? 0 : 1);
+  '; then
+    printf 'Node.js 22.18 or newer is required for the web checks (found %s)\n' "$(node --version)" >&2
+    exit 1
+  fi
   require_cmd npm
   require_cmd npx
 
