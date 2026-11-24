@@ -26,6 +26,7 @@ jobs:
         working-directory: web
       - uses: actions/upload-artifact@v4
         with:
+          if-no-files-found: error
           name: web-dist
           path: web/out
 
@@ -71,12 +72,14 @@ jobs:
         run: dist/artex-linux-amd64/artex -h
       - uses: actions/upload-artifact@v4
         with:
+          if-no-files-found: error
           name: pkg-${{ matrix.goos }}-${{ matrix.goarch }}
           path: "dist/*.zip"
       # Upload the raw linux/amd64 binary separately for the release job's Syft SBOM scan
       - if: matrix.goos == 'linux' && matrix.goarch == 'amd64'
         uses: actions/upload-artifact@v4
         with:
+          if-no-files-found: error
           name: bin-linux-amd64
           path: dist/artex-linux-amd64/artex
 
@@ -127,6 +130,7 @@ jobs:
           subject-path: dist/*.zip
       - uses: actions/upload-artifact@v4
         with:
+          if-no-files-found: error
           name: release-metadata
           path: |
             dist/SHA256SUMS
