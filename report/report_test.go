@@ -473,3 +473,12 @@ func TestWhitespaceOnlyReportIsNotMarkedStale(t *testing.T) {
 		t.Fatal("whitespace should not produce a stale report warning")
 	}
 }
+
+func TestFindingTitleFallsBackForBlankNames(t *testing.T) {
+	if got := findingTitle(&db.DBFinding{Name: " \t", VulnClass: " Class "}); got != "Class" {
+		t.Fatalf("title = %q, want class fallback", got)
+	}
+	if got := findingTitle(&db.DBFinding{Name: " ", VulnClass: " \n"}); got != "Uncategorized" {
+		t.Fatalf("title = %q, want default fallback", got)
+	}
+}
