@@ -197,10 +197,12 @@ export function useSideQuestions(parent: string | null) {
     if (!parent || submitting.current) return;
     submitting.current = true;
     setBusy(true);
-    const version = ++epoch.current;
+    let version = ++epoch.current;
     try {
       await sideAPI.clear(parent);
       if (version !== epoch.current) return;
+      // Also invalidate polls that started while the delete was in flight.
+      version = ++epoch.current;
       setItems([]);
       setNextCursor(0);
       cursor.current = 0;
@@ -213,6 +215,7 @@ export function useSideQuestions(parent: string | null) {
       if (version === epoch.current) {
         submitting.current = false;
         setBusy(false);
+        setLoading(false);
         setStreamEpoch((value) => value + 1);
         void load();
       }
