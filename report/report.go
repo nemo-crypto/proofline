@@ -80,7 +80,7 @@ func severityRank(severity string) int {
 // Markdown renders the report.
 func Markdown(in Input) string {
 	var b strings.Builder
-	fmt.Fprintf(&b, "# Penetration Test Report — %s\n\n", nz(in.Title, "Unnamed task"))
+	fmt.Fprintf(&b, "# Penetration Test Report — %s\n\n", nz(oneLine(in.Title), "Unnamed task"))
 	fmt.Fprintf(&b, "- **Task goal**: %s\n", nz(in.Goal, "(unspecified)"))
 	fmt.Fprintf(&b, "- **Generated at**: %s\n\n", in.GeneratedAt.UTC().Format(time.RFC3339))
 
@@ -122,7 +122,7 @@ func Markdown(in Input) string {
 		}
 		sort.SliceStable(fs, func(i, j int) bool { return severityRank(fs[i].Severity) < severityRank(fs[j].Severity) })
 		for i, f := range fs {
-			fmt.Fprintf(&b, "### %d. [%s] %s\n\n", i+1, strings.ToUpper(nz(f.Severity, "info")), nz(f.Name, nz(f.VulnClass, "Uncategorized")))
+			fmt.Fprintf(&b, "### %d. [%s] %s\n\n", i+1, strings.ToUpper(nz(f.Severity, "info")), nz(oneLine(f.Name), nz(oneLine(f.VulnClass), "Uncategorized")))
 			fmt.Fprintf(&b, "%s\n\n", nz(f.Summary, ""))
 			b.WriteString(qualityBullets(f.Q, true)) // honest proof strength, including its gaps
 			if f.PoC != "" {
