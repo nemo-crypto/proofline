@@ -20,3 +20,22 @@ func TestFindingsMarkdownSummaryAccountsForEveryFinding(t *testing.T) {
 		}
 	}
 }
+
+func TestMarkdownAssetSummary(t *testing.T) {
+	for _, tc := range []struct {
+		name   string
+		counts map[string]int
+		want   string
+	}{
+		{"missing counts", nil, "- Assets: 0 recorded\n"},
+		{"empty counts", map[string]int{}, "- Assets: 0 recorded\n"},
+		{"recorded counts", map[string]int{"url": 3, "host": 2}, "- Assets: host 2, url 3\n"},
+	} {
+		t.Run(tc.name, func(t *testing.T) {
+			got := Markdown(Input{AssetCounts: tc.counts})
+			if !strings.Contains(got, tc.want) {
+				t.Errorf("missing %q in report:\n%s", tc.want, got)
+			}
+		})
+	}
+}
