@@ -27,10 +27,11 @@ const MaskedPrefix = "__masked__"
 // The last 6 characters are not enough to reconstruct the credential, but enough
 // for the person who configured it to recognize "that's my group".
 func MaskedValue(secret string) string {
-	if len(secret) <= 6 {
+	characters := []rune(secret)
+	if len(characters) <= 6 {
 		return MaskedPrefix
 	}
-	return MaskedPrefix + ":…" + secret[len(secret)-6:]
+	return MaskedPrefix + ":…" + string(characters[len(characters)-6:])
 }
 
 // IsMasked reports whether a value is a masked value (i.e. echoed by the API and
