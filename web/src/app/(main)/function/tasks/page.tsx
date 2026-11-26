@@ -403,9 +403,10 @@ export default function TasksPage() {
     setPage(1);
   }, [query, statusFilter, categoryFilter, sortField, sortDirection]);
 
+  const visiblePage = Math.min(page, Math.max(1, Math.ceil(ordered.length / pageSize)));
   const paginated = React.useMemo(
-    () => ordered.slice((page - 1) * pageSize, page * pageSize),
-    [ordered, page, pageSize],
+    () => ordered.slice((visiblePage - 1) * pageSize, visiblePage * pageSize),
+    [ordered, visiblePage, pageSize],
   );
 
   // Multi-select delete: the selection survives paging/filter changes and only shrinks when a task truly disappears (deleted or no longer returned by the backend).
