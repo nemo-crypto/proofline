@@ -196,7 +196,7 @@ func TestMarkdownDetailedReportFenceBalance(t *testing.T) {
 	// An unclosed ```http fence that opens well before the 8 KiB cap and is still
 	// open where the body gets cut.
 	unclosed := "## Evidence\n\n```http\n" + strings.Repeat("GET /orders/7 HTTP/1.1\nHost: victim\n\n", 400)
-	if !unbalancedFence(strings.TrimSpace(unclosed[:reportMaxReportBytes])) {
+	if openFence(strings.TrimSpace(unclosed[:reportMaxReportBytes])) == "" {
 		t.Fatalf("fixture does not cut inside an open fence")
 	}
 	rows := map[int64]db.FindingQuality{
@@ -437,6 +437,16 @@ func TestFindingEvidencePreservesEmbeddedMarkdownFences(t *testing.T) {
 	} {
 		if !strings.Contains(markdown, fence+"\n"+evidence+"\n"+fence+"\n") {
 			t.Errorf("%s export did not preserve the evidence as a literal block", name)
+		}
+	}
+}
+
+func TestTruncatedDetailedReportClosesMatchingFence(t *testing.T) {
+	for _, fence := range []string{"~~~~", "````"} {
+		body := fence + "text\n```\n" + strings.Repeat("sample text\n", 100)
+		output := detailedReportLimit(body, "Report", 64)
+		if !strings.Contains(output, "\n"+fence+"\n\n_Detailed report truncated") {
+			t.Fatalf("missing closing fence %q in %q", fence, output)
 		}
 	}
 }
