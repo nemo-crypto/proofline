@@ -4528,14 +4528,13 @@ func (s *Server) getReport(w http.ResponseWriter, r *http.Request) {
 	if findingsTruncated {
 		findings = findings[:findingLimit]
 	}
-	counts := map[string]int{}
-	for _, ty := range []string{"root_domain", "ip", "subdomain", "app", "service", "endpoint"} {
-		ns, _ := s.m.Assets().QueryByType(ty, 100000, 0)
-		if len(ns) > 0 {
-			counts[ty] = len(ns)
-		}
-	}
 	taskID, _ := strconv.ParseInt(t.ID, 10, 64)
+	counts, err := s.m.Assets().CountsByTypeForTask(taskID)
+	if err != nil {
+		log.Printf("[report] task=%s asset counts: %v", t.ID, err)
+		writeErr(w, http.StatusInternalServerError, "report unavailable: asset counts could not be loaded, retry")
+		return
+	}
 	var ledger *db.CoverageLedger
 	if t.CoverageEnabled {
 		ledger, _ = s.m.Assets().CoverageLedger(taskID)
