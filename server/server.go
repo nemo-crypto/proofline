@@ -4516,12 +4516,17 @@ func (s *Server) getReport(w http.ResponseWriter, r *http.Request) {
 		writeErr(w, 404, "no active task")
 		return
 	}
+	const findingLimit = 1000
 	// Facts are stored separately and never enter the report.
-	findings, err := t.Store.ListByKind(db.KindFinding, 1000)
+	findings, err := t.Store.ListByKind(db.KindFinding, findingLimit+1)
 	if err != nil {
 		log.Printf("[report] task=%s finding list: %v", t.ID, err)
 		writeErr(w, http.StatusInternalServerError, "report unavailable: findings could not be loaded, retry")
 		return
+	}
+	findingsTruncated := len(findings) > findingLimit
+	if findingsTruncated {
+		findings = findings[:findingLimit]
 	}
 	counts := map[string]int{}
 	for _, ty := range []string{"root_domain", "ip", "subdomain", "app", "service", "endpoint"} {
@@ -4558,7 +4563,7 @@ func (s *Server) getReport(w http.ResponseWriter, r *http.Request) {
 	md := report.Markdown(report.Input{
 		Title: t.Description, Goal: t.Goal, GeneratedAt: time.Now(),
 		AssetCounts: counts, Findings: findings, Coverage: ledger,
-		Quality: quality,
+		Quality: quality, FindingsTruncated: findingsTruncated,
 	})
 	w.Header().Set("Content-Type", "text/markdown; charset=utf-8")
 	w.WriteHeader(200)
