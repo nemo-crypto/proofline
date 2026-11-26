@@ -70,7 +70,7 @@ func FindingsMarkdown(fs []*db.DBFinding, generatedAt time.Time) string {
 
 	b.WriteString("## Vulnerability Details\n\n")
 	for i, f := range items {
-		fmt.Fprintf(&b, "### %d. [%s] %s\n\n", i+1, strings.ToUpper(nz(f.Severity, "info")), findingTitle(f))
+		fmt.Fprintf(&b, "### %d. [%s] %s\n\n", i+1, strings.ToUpper(nz(f.Severity, "info")), oneLine(findingTitle(f)))
 		if f.VulnClass != "" {
 			fmt.Fprintf(&b, "- **Class**: %s\n", f.VulnClass)
 		}
@@ -100,7 +100,7 @@ func FindingsMarkdown(fs []*db.DBFinding, generatedAt time.Time) string {
 // SingleFindingMarkdown renders a single vulnerability as a standalone Markdown (used for "one file per vulnerability" packaging).
 func SingleFindingMarkdown(f *db.DBFinding, generatedAt time.Time) string {
 	var b strings.Builder
-	fmt.Fprintf(&b, "# [%s] %s\n\n", strings.ToUpper(nz(f.Severity, "info")), findingTitle(f))
+	fmt.Fprintf(&b, "# [%s] %s\n\n", strings.ToUpper(nz(f.Severity, "info")), oneLine(findingTitle(f)))
 	if f.VulnClass != "" {
 		fmt.Fprintf(&b, "- **Class**: %s\n", f.VulnClass)
 	}
