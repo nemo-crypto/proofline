@@ -22,11 +22,11 @@ interface TablePaginationProps {
 function pageWindows(page: number, total: number): (number | "...")[] {
   if (total <= 7) return Array.from({ length: total }, (_, i) => i + 1);
   const out: (number | "...")[] = [1];
-  if (page > 3) out.push("...");
-  const lo = Math.max(2, page - 1);
-  const hi = Math.min(total - 1, page + 1);
+  const lo = page === 4 ? 2 : Math.max(2, page - 1);
+  const hi = page === total - 3 ? total - 1 : Math.min(total - 1, page + 1);
+  if (lo > 2) out.push("...");
   for (let i = lo; i <= hi; i++) out.push(i);
-  if (page < total - 2) out.push("...");
+  if (hi < total - 1) out.push("...");
   out.push(total);
   return out;
 }
