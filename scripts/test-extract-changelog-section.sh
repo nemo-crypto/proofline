@@ -68,4 +68,40 @@ else
   echo "PASS: whitespace-only section exits non-zero with no output"
 fi
 
+cat > "$tmp/fenced.md" <<'EOF'
+## [3.0.0]
+
+~~~markdown
+## [2.0.0]
+~~~
+
+## [2.0.0]
+
+  ````markdown
+```
+## [1.0.0]
+```
+  ````
+
+This belongs to 2.0.0.
+
+## [1.0.0]
+
+Older notes.
+EOF
+
+expected='  ````markdown
+```
+## [1.0.0]
+```
+  ````
+
+This belongs to 2.0.0.'
+if out=$(bash "$extract" 2.0.0 "$tmp/fenced.md") && [ "$out" = "$expected" ]; then
+  echo "PASS: headings inside fenced examples do not start or end the section"
+else
+  echo "FAIL: fenced example confused the section extractor"; printf '%s\n' "${out-}"
+  fail=1
+fi
+
 exit "$fail"
