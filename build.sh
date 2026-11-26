@@ -171,6 +171,8 @@ compress_binary() {
   ok "UPX compression done: $binary (${before} -> ${after} bytes)"
 }
 
+packaged_archives=()
+
 package_binary() {
   binary="$1"
   goos="$2"
@@ -198,6 +200,7 @@ package_binary() {
   if [ -f README.md ]; then cp README.md "$package_root/"; fi
   (cd "$ARTEX_PACKAGE_DIR" && zip -q -r -9 "$(basename "$archive")" "$(basename "$package_root")")
   rm -rf "$package_root"
+  packaged_archives+=("$(basename "$archive")")
   ok "Release archive: $archive"
 }
 
@@ -244,11 +247,12 @@ build_target() {
 
 write_checksums() {
   [ "$ARTEX_PACKAGE" = "1" ] || return 0
+  [ "${#packaged_archives[@]}" -gt 0 ] || die "no release archives were generated"
   checksum_file="$ARTEX_PACKAGE_DIR/SHA256SUMS"
   if command -v sha256sum >/dev/null 2>&1; then
-    (cd "$ARTEX_PACKAGE_DIR" && for archive in *.zip; do sha256sum "$archive"; done > "$(basename "$checksum_file")")
+    (cd "$ARTEX_PACKAGE_DIR" && for archive in "${packaged_archives[@]}"; do sha256sum "$archive"; done > "$(basename "$checksum_file")")
   elif command -v shasum >/dev/null 2>&1; then
-    (cd "$ARTEX_PACKAGE_DIR" && for archive in *.zip; do shasum -a 256 "$archive"; done > "$(basename "$checksum_file")")
+    (cd "$ARTEX_PACKAGE_DIR" && for archive in "${packaged_archives[@]}"; do shasum -a 256 "$archive"; done > "$(basename "$checksum_file")")
   else
     warn "Neither sha256sum nor shasum detected; skipping SHA256SUMS"
     return 0
