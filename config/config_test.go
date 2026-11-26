@@ -168,6 +168,17 @@ func TestMalformedConfigIsAnError(t *testing.T) {
 	}
 }
 
+func TestNullConfigIsAnError(t *testing.T) {
+	path := filepath.Join(t.TempDir(), "config.json")
+	if err := os.WriteFile(path, []byte("null"), 0o600); err != nil {
+		t.Fatal(err)
+	}
+	t.Setenv("ARTEX_CONFIG", path)
+	if _, err := Load(); err == nil || !strings.Contains(err.Error(), "expected a JSON object") {
+		t.Fatalf("expected a config type error, got %v", err)
+	}
+}
+
 func TestPostgresDSNFormatsIPv6Host(t *testing.T) {
 	for _, host := range []string{"2001:db8::1", "[2001:db8::1]"} {
 		dsn := (Database{Host: host, Port: 5433, DBName: "app"}).buildDSN()
