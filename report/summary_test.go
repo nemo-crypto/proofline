@@ -39,3 +39,17 @@ func TestMarkdownAssetSummary(t *testing.T) {
 		})
 	}
 }
+
+func TestMarkdownExportsUseUTCTimestamps(t *testing.T) {
+	generatedAt := time.Date(2026, 11, 26, 20, 0, 5, 0, time.FixedZone("UTC+8", 8*3600))
+	finding := &db.DBFinding{}
+	for name, markdown := range map[string]string{
+		"task":           Markdown(Input{GeneratedAt: generatedAt}),
+		"findings":       FindingsMarkdown([]*db.DBFinding{finding}, generatedAt),
+		"single finding": SingleFindingMarkdown(finding, generatedAt),
+	} {
+		if !strings.Contains(markdown, "- **Generated at**: 2026-11-26T12:00:05Z\n") {
+			t.Errorf("%s export lost the UTC timestamp", name)
+		}
+	}
+}
