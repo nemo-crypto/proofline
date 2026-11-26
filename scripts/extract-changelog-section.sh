@@ -16,10 +16,26 @@ changelog=${2:-CHANGELOG.md}
 
 body=$(awk -v head="## [$version]" '
   { sub(/\r$/, "") } # tolerate a CRLF checkout
-  index($0, "## [") == 1 {
+  !fence && index($0, "## [") == 1 {
     if (found) exit
     rest = substr($0, length(head) + 1)
     if (substr($0, 1, length(head)) == head && (rest == "" || rest ~ /^[ \t]/)) { found = 1; next }
+  }
+  # Ignore headings inside fenced examples, but preserve those lines in output.
+  {
+    line = $0
+    sub(/^ ? ? ?/, "", line)
+    if (match(line, /^(```+|~~~+)/)) {
+      marker = substr(line, 1, 1)
+      if (fence) {
+        if (marker == fence && RLENGTH >= fenceLength && substr(line, RLENGTH + 1) ~ /^[[:blank:]]*$/) {
+          fence = ""
+        }
+      } else if (marker == "~" || substr(line, RLENGTH + 1) !~ /`/) {
+        fence = marker
+        fenceLength = RLENGTH
+      }
+    }
   }
   found && /[^[:blank:]]/ { printf "%s%s\n", blank, $0; blank = ""; started = 1; next }
   found && started { blank = blank $0 "\n" }
