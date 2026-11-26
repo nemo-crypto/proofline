@@ -401,3 +401,27 @@ func TestFindingFilenameUnicodeAndIDSuffix(t *testing.T) {
 		t.Fatalf("expected preserved distinct ID suffixes: f1=%q f2=%q", f1, f2)
 	}
 }
+
+func TestReportSortsUnrecognizedSeverityAfterKnownSeverities(t *testing.T) {
+	const unknown = "Informational example"
+	const low = "Low example"
+	assertOrder := func(t *testing.T, output string) {
+		t.Helper()
+		lowIndex, unknownIndex := strings.Index(output, low), strings.Index(output, unknown)
+		if lowIndex < 0 || unknownIndex < 0 || lowIndex >= unknownIndex {
+			t.Fatalf("expected %q before %q in report", low, unknown)
+		}
+	}
+	t.Run("task Markdown", func(t *testing.T) {
+		assertOrder(t, Markdown(Input{Findings: []*db.Node{
+			reportNode(1, "info", unknown),
+			reportNode(2, "low", low),
+		}}))
+	})
+	t.Run("findings Markdown", func(t *testing.T) {
+		findings := []*db.DBFinding{{}, {}}
+		findings[0].Severity, findings[0].Name = "info", unknown
+		findings[1].Severity, findings[1].Name = "low", low
+		assertOrder(t, FindingsMarkdown(findings, time.Unix(0, 0)))
+	})
+}
