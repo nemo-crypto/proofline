@@ -4517,7 +4517,13 @@ func (s *Server) getReport(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 	const findingLimit = 1000
-	findings, _ := t.Store.ListByKind(db.KindFinding, findingLimit+1) // pure vulnerabilities (facts are a separate KindFact and never enter the report)
+	// Facts are stored separately and never enter the report.
+	findings, err := t.Store.ListByKind(db.KindFinding, findingLimit+1)
+	if err != nil {
+		log.Printf("[report] task=%s finding list: %v", t.ID, err)
+		writeErr(w, http.StatusInternalServerError, "report unavailable: findings could not be loaded, retry")
+		return
+	}
 	findingsTruncated := len(findings) > findingLimit
 	if findingsTruncated {
 		findings = findings[:findingLimit]
