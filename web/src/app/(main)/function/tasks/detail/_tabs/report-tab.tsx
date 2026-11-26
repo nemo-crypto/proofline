@@ -13,20 +13,33 @@ import { api } from "@/lib/api";
 import { copyText } from "@/lib/utils";
 
 export function ReportTab({ taskId }: { taskId: string }) {
+  const [attempt, setAttempt] = React.useState(0);
+  return (
+    <TaskReport
+      key={JSON.stringify([taskId, attempt])}
+      taskId={taskId}
+      onRetry={() => setAttempt((current) => current + 1)}
+    />
+  );
+}
+
+function TaskReport({ taskId, onRetry }: { taskId: string; onRetry: () => void }) {
   const [report, setReport] = React.useState<string>("");
   const [loading, setLoading] = React.useState(true);
+  const [failed, setFailed] = React.useState(false);
   const [copied, setCopied] = React.useState(false);
 
   React.useEffect(() => {
     let active = true;
     setLoading(true);
+    setFailed(false);
     api
       .report(taskId)
       .then((text) => {
         if (active) setReport(text);
       })
       .catch(() => {
-        if (active) setReport("");
+        if (active) setFailed(true);
       })
       .finally(() => {
         if (active) setLoading(false);
@@ -54,6 +67,15 @@ export function ReportTab({ taskId }: { taskId: string }) {
       <div className="flex flex-col items-center justify-center gap-2 rounded-md border border-dashed py-16 text-muted-foreground text-sm">
         <FileTextIcon className="size-8 opacity-40" />
         {t("Loading…")}
+      </div>
+    );
+  } else if (failed) {
+    content = (
+      <div className="flex flex-col items-center justify-center gap-2 rounded-md border border-dashed py-16 text-muted-foreground text-sm">
+        <p role="alert">{t("Failed to load")}</p>
+        <Button size="sm" variant="outline" onClick={onRetry}>
+          {t("Retry")}
+        </Button>
       </div>
     );
   } else if (report) {
