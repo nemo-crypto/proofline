@@ -82,7 +82,7 @@ func Markdown(in Input) string {
 	var b strings.Builder
 	fmt.Fprintf(&b, "# Penetration Test Report — %s\n\n", nz(in.Title, "Unnamed task"))
 	fmt.Fprintf(&b, "- **Task goal**: %s\n", nz(in.Goal, "(unspecified)"))
-	fmt.Fprintf(&b, "- **Generated at**: %s\n\n", in.GeneratedAt.Format("2006-01-02 15:04:05"))
+	fmt.Fprintf(&b, "- **Generated at**: %s\n\n", in.GeneratedAt.UTC().Format(time.RFC3339))
 
 	// summary
 	fmt.Fprintf(&b, "## Summary\n\n")

@@ -44,7 +44,7 @@ func FindingsMarkdown(fs []*db.DBFinding, generatedAt time.Time) string {
 
 	var b strings.Builder
 	b.WriteString("# Vulnerability Findings Summary Report\n\n")
-	fmt.Fprintf(&b, "- **Generated at**: %s\n", generatedAt.Format("2006-01-02 15:04:05"))
+	fmt.Fprintf(&b, "- **Generated at**: %s\n", generatedAt.UTC().Format(time.RFC3339))
 	fmt.Fprintf(&b, "- **Total findings**: %d\n\n", len(items))
 
 	// Summary: counts per severity.
@@ -76,7 +76,7 @@ func FindingsMarkdown(fs []*db.DBFinding, generatedAt time.Time) string {
 		if desc := strings.TrimSpace(f.TaskDescription); desc != "" {
 			fmt.Fprintf(&b, "- **Task**: %s\n", desc)
 		}
-		fmt.Fprintf(&b, "- **Found at**: %s\n", f.CreatedAt.Format("2006-01-02 15:04:05"))
+		fmt.Fprintf(&b, "- **Found at**: %s\n", f.CreatedAt.UTC().Format(time.RFC3339))
 		q := qualityFromDBFinding(f)
 		b.WriteString(qualityBullets(q, false))
 		if s := strings.TrimSpace(f.Summary); s != "" {
@@ -107,8 +107,8 @@ func SingleFindingMarkdown(f *db.DBFinding, generatedAt time.Time) string {
 	if desc := strings.TrimSpace(f.TaskDescription); desc != "" {
 		fmt.Fprintf(&b, "- **Task**: %s\n", desc)
 	}
-	fmt.Fprintf(&b, "- **Found at**: %s\n", f.CreatedAt.Format("2006-01-02 15:04:05"))
-	fmt.Fprintf(&b, "- **Generated at**: %s\n", generatedAt.Format("2006-01-02 15:04:05"))
+	fmt.Fprintf(&b, "- **Found at**: %s\n", f.CreatedAt.UTC().Format(time.RFC3339))
+	fmt.Fprintf(&b, "- **Generated at**: %s\n", generatedAt.UTC().Format(time.RFC3339))
 	q := qualityFromDBFinding(f)
 	b.WriteString(qualityBullets(q, false))
 	if s := strings.TrimSpace(f.Summary); s != "" {
@@ -218,7 +218,7 @@ func FindingsCSV(fs []*db.DBFinding) []byte {
 			csvCell(nz(f.Status, "pending")),
 			csvCell(nz(f.ReportState, "none")),
 			csvCell(f.TaskDescription),
-			csvCell(f.CreatedAt.Format("2006-01-02 15:04:05")),
+			csvCell(f.CreatedAt.UTC().Format(time.RFC3339)),
 			csvCell(strings.TrimSpace(f.Summary)),
 			fmt.Sprint(len(f.TrafficBindings)),
 			csvCell(findingTrafficIDs(f)),
