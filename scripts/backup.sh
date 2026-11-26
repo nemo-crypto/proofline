@@ -81,12 +81,22 @@ if [ "$WITH_DATA" -eq 1 ]; then
   publish "$DATA_NAME"
 fi
 
-prune() {
-  ls -1t "$OUTPUT_DIR"/$1 2>/dev/null | awk -v keep="$KEEP" 'NR > keep' | while IFS= read -r old; do
-    echo "pruning $old"
-    rm -f "$old"
+prune() (
+  cd -- "$OUTPUT_DIR"
+  local pattern="$1" file
+  set --
+  for file in $pattern; do
+    # Only generated names are safe to pass through a line-oriented sort.
+    [[ "$file" =~ ^artex-(db|data)-[0-9]{8}T[0-9]{6}Z\.(sql|tar)\.gz$ ]] || continue
+    [ -f "$file" ] && [ ! -L "$file" ] || continue
+    set -- "$@" "$file"
   done
-}
+  [ "$#" -gt 0 ] || exit 0
+  ls -1t -- "$@" | awk -v keep="$KEEP" 'NR > keep' | while IFS= read -r old; do
+    echo "pruning $OUTPUT_DIR/$old"
+    rm -f -- "$old"
+  done
+)
 prune 'artex-db-*.sql.gz'
 [ "$WITH_DATA" -eq 1 ] && prune 'artex-data-*.tar.gz'
 echo "backup complete ($KEEP newest kept)"
