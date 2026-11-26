@@ -91,17 +91,21 @@ func Markdown(in Input) string {
 	} else {
 		fmt.Fprintf(&b, "- Confirmed findings: **%d**\n", len(in.Findings))
 	}
-	fmt.Fprintf(&b, "- Assets: ")
-	var types []string
-	for t := range in.AssetCounts {
-		types = append(types, t)
-	}
-	sort.Strings(types)
-	for i, t := range types {
-		if i > 0 {
-			b.WriteString(", ")
+	b.WriteString("- Assets: ")
+	if len(in.AssetCounts) == 0 {
+		b.WriteString("0 recorded")
+	} else {
+		types := make([]string, 0, len(in.AssetCounts))
+		for assetType := range in.AssetCounts {
+			types = append(types, assetType)
 		}
-		fmt.Fprintf(&b, "%s %d", t, in.AssetCounts[t])
+		sort.Strings(types)
+		for i, assetType := range types {
+			if i > 0 {
+				b.WriteString(", ")
+			}
+			fmt.Fprintf(&b, "%s %d", assetType, in.AssetCounts[assetType])
+		}
 	}
 	b.WriteString("\n\n")
 
