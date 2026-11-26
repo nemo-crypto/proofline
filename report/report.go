@@ -14,12 +14,13 @@ import (
 
 // Input bundles what the report needs.
 type Input struct {
-	Title       string
-	Goal        string
-	GeneratedAt time.Time
-	AssetCounts map[string]int
-	Findings    []*db.Node
-	Coverage    *db.CoverageLedger // nil when the task's coverage feature is off
+	Title             string
+	Goal              string
+	GeneratedAt       time.Time
+	AssetCounts       map[string]int
+	Findings          []*db.Node
+	FindingsTruncated bool
+	Coverage          *db.CoverageLedger // nil when the task's coverage feature is off
 
 	// Quality carries the standalone findings-row data (poe level, verification
 	// state, the two attestations, both evidence versions and the reporter-written
@@ -85,7 +86,11 @@ func Markdown(in Input) string {
 
 	// summary
 	fmt.Fprintf(&b, "## Summary\n\n")
-	fmt.Fprintf(&b, "- Confirmed findings: **%d**\n", len(in.Findings))
+	if in.FindingsTruncated {
+		fmt.Fprintf(&b, "- Showing the latest **%d** confirmed findings. Older findings are omitted.\n", len(in.Findings))
+	} else {
+		fmt.Fprintf(&b, "- Confirmed findings: **%d**\n", len(in.Findings))
+	}
 	fmt.Fprintf(&b, "- Assets: ")
 	var types []string
 	for t := range in.AssetCounts {
