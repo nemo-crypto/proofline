@@ -62,11 +62,8 @@ while [ "$#" -gt 0 ]; do
       [ "$#" -ge 2 ] || die "--target requires an OS/ARCH argument"
       target_arg="$2"
       case "$target_arg" in
-        */*)
-          ARTEX_TARGET_OS="${target_arg%%/*}"
-          ARTEX_TARGET_ARCH="${target_arg##*/}"
-          ARTEX_TARGETS="$target_arg"
-          ;;
+        /*|*/|*/*/*) die "target must be OS/ARCH, e.g. linux/amd64" ;;
+        */*) ARTEX_TARGETS="$target_arg" ;;
         *) die "target must be OS/ARCH, e.g. linux/amd64" ;;
       esac
       shift 2
@@ -207,6 +204,7 @@ package_binary() {
 build_target() {
   target="$1"
   case "$target" in
+    /*|*/|*/*/*) die "invalid target: $target (must be OS/ARCH)" ;;
     */*) ;;
     *) die "invalid target: $target (must be OS/ARCH)" ;;
   esac
