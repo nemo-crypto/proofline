@@ -7,6 +7,7 @@ import (
 	"errors"
 	"fmt"
 	"io/fs"
+	"net"
 	"net/url"
 	"os"
 	"path/filepath"
@@ -106,7 +107,7 @@ func Path() string {
 	}
 	candidates = append(candidates, filepath.Join(BaseDir(), "config.json"))
 	for _, c := range candidates {
-		if _, err := os.Stat(c); err == nil {
+		if _, err := os.Stat(c); !errors.Is(err, fs.ErrNotExist) {
 			return c
 		}
 	}
@@ -247,7 +248,7 @@ func (d Database) buildDSN() string {
 	}
 	u := url.URL{
 		Scheme: "postgres",
-		Host:   host + ":" + strconv.Itoa(port),
+		Host:   net.JoinHostPort(strings.TrimSuffix(strings.TrimPrefix(host, "["), "]"), strconv.Itoa(port)),
 		Path:   "/" + d.DBName,
 	}
 	if d.User != "" {

@@ -13,10 +13,12 @@ export function setClientCookie(key: string, value: string, days = 7) {
 }
 
 export function getClientCookie(key: string) {
+  const prefix = `${key}=`;
   return document.cookie
-    .split("; ")
-    .find((row) => row.startsWith(`${key}=`))
-    ?.split("=")[1];
+    .split(";")
+    .map((row) => row.trimStart())
+    .find((row) => row.startsWith(prefix))
+    ?.slice(prefix.length);
 }
 
 export function deleteClientCookie(key: string) {
