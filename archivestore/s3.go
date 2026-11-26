@@ -64,12 +64,12 @@ func New(c Config) (*Store, error) {
 	u, err := url.Parse(c.Endpoint)
 	loopback := false
 	if err == nil {
-		loopback = u.Hostname() == "localhost"
+		loopback = strings.EqualFold(u.Hostname(), "localhost")
 		if ip := net.ParseIP(u.Hostname()); ip != nil {
 			loopback = ip.IsLoopback()
 		}
 	}
-	if err != nil || u.Host == "" || u.User != nil || u.RawQuery != "" || u.Fragment != "" || (u.Path != "" && u.Path != "/") ||
+	if err != nil || u.Hostname() == "" || u.User != nil || u.RawQuery != "" || u.Fragment != "" || (u.Path != "" && u.Path != "/") ||
 		(u.Scheme != "https" && !(u.Scheme == "http" && loopback)) {
 		return nil, errors.New("archive S3 endpoint must be an HTTPS origin (HTTP allowed only on loopback)")
 	}
