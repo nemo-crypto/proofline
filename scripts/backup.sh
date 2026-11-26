@@ -16,7 +16,7 @@
 #   gunzip -c "$backup_file" | docker compose exec -T postgres \
 #     sh -c 'psql -v ON_ERROR_STOP=1 -U "$POSTGRES_USER" -d "$POSTGRES_DB"'
 set -euo pipefail
-CDPATH= cd -- "$(dirname "$0")/.."
+CDPATH='' cd -- "$(dirname "$0")/.."
 
 usage() { sed -n '2,15p' "scripts/backup.sh" | sed 's/^# \?//'; }
 
@@ -82,7 +82,7 @@ if [ "$WITH_DATA" -eq 1 ]; then
 fi
 
 prune() (
-  CDPATH= cd -- "$OUTPUT_DIR"
+  CDPATH='' cd -- "$OUTPUT_DIR"
   local pattern="$1" file
   set --
   for file in $pattern; do
