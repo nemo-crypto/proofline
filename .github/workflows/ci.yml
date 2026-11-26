@@ -155,6 +155,7 @@ jobs:
       - run: npm run test:i18n
       - run: npm run test:bash
       - run: node --test src/lib/activity-merge.test.mjs
+      - run: node --test src/lib/chat-mentions.test.mjs src/lib/http-href.test.mjs
       - run: npm run build:static
 
   python:
