@@ -84,7 +84,8 @@ func FindingsMarkdown(fs []*db.DBFinding, generatedAt time.Time) string {
 			fmt.Fprintf(&b, "%s\n\n", s)
 		}
 		if e := strings.TrimSpace(f.Evidence); e != "" {
-			fmt.Fprintf(&b, "**Evidence:**\n\n```\n%s\n```\n\n", e)
+			b.WriteString("**Evidence:**\n\n")
+			writeLiteralBlock(&b, e)
 		}
 		b.WriteString(qualityNarrative(q))
 		b.WriteString(detailedReportFull(f.Report, "**Detailed report:**"))
@@ -115,7 +116,8 @@ func SingleFindingMarkdown(f *db.DBFinding, generatedAt time.Time) string {
 		fmt.Fprintf(&b, "## Summary\n\n%s\n\n", s)
 	}
 	if e := strings.TrimSpace(f.Evidence); e != "" {
-		fmt.Fprintf(&b, "## Evidence\n\n```\n%s\n```\n\n", e)
+		b.WriteString("## Evidence\n\n")
+		writeLiteralBlock(&b, e)
 	}
 	b.WriteString(qualityNarrative(q))
 	b.WriteString(detailedReportFull(f.Report, "## Detailed Report"))

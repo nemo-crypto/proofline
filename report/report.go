@@ -117,7 +117,8 @@ func Markdown(in Input) string {
 			fmt.Fprintf(&b, "%s\n\n", nz(f.Summary, ""))
 			b.WriteString(qualityBullets(f.Q, true)) // honest proof strength, including its gaps
 			if f.PoC != "" {
-				fmt.Fprintf(&b, "**PoC / Evidence:**\n\n```\n%s\n```\n\n", f.PoC)
+				b.WriteString("**PoC / Evidence:**\n\n")
+				writeLiteralBlock(&b, f.PoC)
 			}
 			b.WriteString(qualityNarrative(f.Q)) // why it holds / what failed, only when written
 			// The same warning, from the same helper, that the findings export prints: a
@@ -151,4 +152,19 @@ func nz(s, d string) string {
 		return d
 	}
 	return s
+}
+
+// writeLiteralBlock uses a fence longer than any backtick run in the content.
+func writeLiteralBlock(b *strings.Builder, content string) {
+	length, run := 3, 0
+	for i := 0; i < len(content); i++ {
+		if content[i] == '`' {
+			run++
+			length = max(length, run+1)
+		} else {
+			run = 0
+		}
+	}
+	fence := strings.Repeat("`", length)
+	fmt.Fprintf(b, "%s\n%s\n%s\n\n", fence, content, fence)
 }
