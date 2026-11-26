@@ -48,16 +48,15 @@ func FindingsMarkdown(fs []*db.DBFinding, generatedAt time.Time) string {
 	fmt.Fprintf(&b, "- **Total findings**: %d\n\n", len(items))
 
 	// Summary: counts per severity.
-	counts := map[string]int{}
+	labels := [...]string{"Critical", "High", "Medium", "Low", "Info / other"}
+	var counts [len(labels)]int
 	for _, f := range items {
-		counts[f.Severity]++
+		counts[severityRank(f.Severity)]++
 	}
 	b.WriteString("## Summary\n\n")
 	b.WriteString("| Severity | Count |\n| --- | --- |\n")
-	for _, s := range []struct{ key, label string }{
-		{"critical", "Critical"}, {"high", "High"}, {"medium", "Medium"}, {"low", "Low"},
-	} {
-		fmt.Fprintf(&b, "| %s | %d |\n", s.label, counts[s.key])
+	for rank, label := range labels {
+		fmt.Fprintf(&b, "| %s | %d |\n", label, counts[rank])
 	}
 	b.WriteString("\n")
 
