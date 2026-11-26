@@ -401,3 +401,18 @@ func TestFindingFilenameUnicodeAndIDSuffix(t *testing.T) {
 		t.Fatalf("expected preserved distinct ID suffixes: f1=%q f2=%q", f1, f2)
 	}
 }
+
+func TestFindingEvidencePreservesEmbeddedMarkdownFences(t *testing.T) {
+	evidence := "Example payload:\n" + strings.Repeat("`", 3) + "\nplain text\n" + strings.Repeat("`", 3)
+	f := &db.DBFinding{}
+	f.Evidence = evidence
+	fence := strings.Repeat("`", 4)
+	for name, markdown := range map[string]string{
+		"single": SingleFindingMarkdown(f, time.Unix(0, 0)),
+		"batch":  FindingsMarkdown([]*db.DBFinding{f}, time.Unix(0, 0)),
+	} {
+		if !strings.Contains(markdown, fence+"\n"+evidence+"\n"+fence+"\n") {
+			t.Errorf("%s export did not preserve the evidence as a literal block", name)
+		}
+	}
+}
