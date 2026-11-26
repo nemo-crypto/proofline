@@ -36,7 +36,7 @@ func sortFindingsForExport(fs []*db.DBFinding) {
 
 // findingTitle returns the vulnerability's readable title: name → class → "Uncategorized".
 func findingTitle(f *db.DBFinding) string {
-	return nz(f.Name, nz(f.VulnClass, "Uncategorized"))
+	return nz(strings.TrimSpace(f.Name), nz(strings.TrimSpace(f.VulnClass), "Uncategorized"))
 }
 
 // FindingsMarkdown combines a batch of findings into a summary report (summary + grouped by severity,
