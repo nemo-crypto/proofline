@@ -144,6 +144,8 @@ if want_web; then
   run_step "web shell exit-status tests" npm --prefix web run test:bash
   run_step "web traffic stream tests" bash -c 'cd web && npm run test:traffic-stream'
   run_step "web activity, mentions and link tests" node --test web/src/lib/activity-merge.test.mjs web/src/lib/chat-mentions.test.mjs web/src/lib/http-href.test.mjs
+  run_step "extension background syntax" node --check extension/background.js
+  run_step "extension popup syntax" node --check extension/popup.js
   if [ "$FULL" -eq 1 ]; then
     run_step "web static build" bash -c 'cd web && npm run build:static'
   fi
