@@ -1,3 +1,5 @@
+import { getLocalStorageValue, removeLocalStorageValue } from "./local-storage.client";
+
 const TOKEN_KEY = "artex_token";
 const COOKIE_MAX_AGE = 7 * 24 * 60 * 60; // 7 days (seconds)
 
@@ -14,7 +16,7 @@ export const auth = {
   getToken(): string | null {
     if (typeof window === "undefined") return null;
     // Mock demo: no real login; return a fake token so the route guard allows going straight into the main UI.
-    return localStorage.getItem(TOKEN_KEY) ?? (process.env.NEXT_PUBLIC_MOCK === "1" ? "mock-demo" : null);
+    return getLocalStorageValue(TOKEN_KEY) ?? (process.env.NEXT_PUBLIC_MOCK === "1" ? "mock-demo" : null);
   },
 
   setToken(token: string): void {
@@ -24,7 +26,7 @@ export const auth = {
   },
 
   clearToken(): void {
-    localStorage.removeItem(TOKEN_KEY);
+    removeLocalStorageValue(TOKEN_KEY);
     document.cookie = `${TOKEN_KEY}=; path=/; max-age=0`;
   },
 
