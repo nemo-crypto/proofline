@@ -99,7 +99,7 @@ if want_go; then
     if [ "${#files[@]}" -eq 0 ]; then
       return 0
     fi
-    out=$(gofmt -l "${files[@]}")
+    out=$(gofmt -l "${files[@]}") || return 1
     if [ -n "$out" ]; then
       printf 'gofmt required:\n%s\n' "$out"
       return 1
