@@ -2,6 +2,8 @@ import { readFileSync, readdirSync, statSync } from "node:fs";
 import { dirname, join } from "node:path";
 import { fileURLToPath } from "node:url";
 
+import { literalTranslationKeys } from "./i18n-source-keys.mjs";
+
 // English source text is the key. Check every shipped dictionary, including
 // dynamic entries, while retaining the existing literal-call coverage check.
 const root = join(dirname(fileURLToPath(import.meta.url)), "..");
@@ -23,12 +25,9 @@ function walk(dir) {
 walk(join(root, "src"));
 
 const calls = new Map();
-const literalCall = /(?:^|[^\w$.])t\(\s*(?:"((?:[^"\\]|\\.)*)"|'((?:[^'\\]|\\.)*)')/gm;
 for (const file of files) {
-  const src = readFileSync(file, "utf8");
-  for (const m of src.matchAll(literalCall)) {
-    const key =
-      m[1] !== undefined ? JSON.parse(`"${m[1]}"`) : m[2].replace(/\\(['\\])/g, "$1");
+  const source = readFileSync(file, "utf8");
+  for (const key of literalTranslationKeys(file, source)) {
     if (!calls.has(key)) calls.set(key, file.slice(root.length + 1));
   }
 }
