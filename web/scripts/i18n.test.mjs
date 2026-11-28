@@ -5,6 +5,7 @@ import test from "node:test";
 import vm from "node:vm";
 import ts from "typescript";
 
+import { parseLocaleDictionary } from "./i18n-dictionary.mjs";
 import { literalTranslationKeys } from "./i18n-source-keys.mjs";
 
 const sourceURL = new URL("../src/i18n/index.ts", import.meta.url);
@@ -116,4 +117,12 @@ test("switching persists the existing storage key and reloads once", () => {
   assert.equal(blocked.api.setLocale("zh-CN"), false);
   assert.deepEqual(blocked.writes, []);
   assert.equal(blocked.reloads(), 0);
+});
+
+test("dictionary validation rejects duplicate keys including escaped spellings", () => {
+  assert.deepEqual(parseLocaleDictionary("tr.json", '{"Language":"Dil"}'), { Language: "Dil" });
+  for (const source of ['{"Language":"Dil","Language":"Lisan"}', '{"Language":"Dil","\\u004canguage":"Lisan"}']) {
+    assert.throws(() => parseLocaleDictionary("tr.json", source), /tr\.json: duplicate translation key "Language"/);
+  }
+  assert.throws(() => parseLocaleDictionary("tr.json", '[]'), /tr\.json: expected a JSON object/);
 });
