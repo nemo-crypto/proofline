@@ -2,6 +2,7 @@ import { readFileSync, readdirSync, statSync } from "node:fs";
 import { dirname, join } from "node:path";
 import { fileURLToPath } from "node:url";
 
+import { parseLocaleDictionary } from "./i18n-dictionary.mjs";
 import { literalTranslationKeys } from "./i18n-source-keys.mjs";
 
 // English source text is the key. Check every shipped dictionary, including
@@ -11,7 +12,7 @@ const localeDir = join(root, "src/i18n/locales");
 const dictionaries = readdirSync(localeDir)
   .filter((name) => name.endsWith(".json"))
   .sort()
-  .map((name) => [name, JSON.parse(readFileSync(join(localeDir, name), "utf8"))]);
+  .map((name) => [name, parseLocaleDictionary(name, readFileSync(join(localeDir, name), "utf8"))]);
 
 const files = [];
 function walk(dir) {
