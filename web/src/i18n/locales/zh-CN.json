@@ -1210,6 +1210,7 @@
   "keyword": "关键词",
   "Keyword": "关键词",
   "Language": "语言",
+  "Could not save your language preference.": "无法保存你的语言偏好。",
   "Last {count} calls": "最近 {count} 次调用",
   "Last {count} Q&A exchanges verbatim": "最近 {count} 轮问答原文",
   "Last activity": "最近活动",

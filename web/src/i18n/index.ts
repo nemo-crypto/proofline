@@ -80,12 +80,13 @@ export function t(key: string, vars?: TVars): string {
   );
 }
 
-export function setLocale(next: Locale) {
-  if (next === locale) return;
+export function setLocale(next: Locale): boolean {
+  if (next === locale) return true;
   try {
     window.localStorage.setItem(STORAGE_KEY, next);
   } catch {
-    /* storage blocked: fall back to browser-language detection on reload */
+    return false;
   }
   window.location.reload();
+  return true;
 }
