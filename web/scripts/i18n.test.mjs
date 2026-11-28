@@ -82,12 +82,13 @@ test("existing English and Turkish preferences and formatting are preserved", ()
 
 test("switching persists the existing storage key and reloads once", () => {
   const state = load();
-  state.api.setLocale("en");
+  assert.equal(state.api.setLocale("en"), true);
   assert.equal(state.reloads(), 0);
-  state.api.setLocale("zh-CN");
+  assert.equal(state.api.setLocale("zh-CN"), true);
   assert.deepEqual(state.writes, [["artex.locale", "zh-CN"]]);
   assert.equal(state.reloads(), 1);
   const blocked = load({ blocked: true });
-  assert.doesNotThrow(() => blocked.api.setLocale("zh-CN"));
-  assert.equal(blocked.reloads(), 1);
+  assert.equal(blocked.api.setLocale("zh-CN"), false);
+  assert.deepEqual(blocked.writes, []);
+  assert.equal(blocked.reloads(), 0);
 });

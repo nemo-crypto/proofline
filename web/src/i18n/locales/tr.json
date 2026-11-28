@@ -1210,6 +1210,7 @@
   "keyword": "anahtar kelime",
   "Keyword": "Anahtar kelime",
   "Language": "Dil",
+  "Could not save your language preference.": "Dil tercihiniz kaydedilemedi.",
   "Last {count} calls": "Son {count} çağrı",
   "Last {count} Q&A exchanges verbatim": "Son {count} soru-cevap aynen",
   "Last activity": "Son etkinlik",

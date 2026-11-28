@@ -1,6 +1,7 @@
 "use client";
 
 import { Settings } from "lucide-react";
+import { toast } from "sonner";
 
 import { Button } from "@/components/ui/button";
 import { Label } from "@/components/ui/label";
@@ -21,7 +22,7 @@ import { persistPreference } from "@/lib/preferences/preferences-storage";
 import { THEME_PRESET_OPTIONS, type ThemeMode, type ThemePreset } from "@/lib/preferences/theme";
 import { applyThemePreset } from "@/lib/preferences/theme-utils";
 import { usePreferencesStore } from "@/stores/preferences/preferences-provider";
-import { type Locale, LOCALES, locale, setLocale, t } from "@/i18n";
+import { LOCALES, locale, setLocale, t } from "@/i18n";
 
 export function LayoutControls() {
   const themeMode = usePreferencesStore((s) => s.themeMode);
@@ -119,7 +120,12 @@ export function LayoutControls() {
                 variant="outline"
                 type="single"
                 value={locale}
-                onValueChange={(v: string) => v && setLocale(v as Locale)}
+                onValueChange={(value) => {
+                  const choice = LOCALES.find(({ code }) => code === value);
+                  if (choice && !setLocale(choice.code)) {
+                    toast.error(t("Could not save your language preference."));
+                  }
+                }}
               >
                 {LOCALES.map((l) => (
                   <ToggleGroupItem key={l.code} value={l.code} aria-label={l.label}>
