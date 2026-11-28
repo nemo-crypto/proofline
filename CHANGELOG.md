@@ -906,7 +906,7 @@ First release of this fork. The engine underneath is still upstream's, but this 
 
 - [@Autumn-27](https://github.com/Autumn-27)
 - [@neouks](https://github.com/neouks)
-- [@begininvoke](https://github.com/begininvoke)
+- [@begininvoke](https://github.com/BaaRai/ARTEX/commit/d59db4ad840960295f14d4604af7a48b425a30d0)
 
 ## [0.3.6] - 2026-08-27
 
