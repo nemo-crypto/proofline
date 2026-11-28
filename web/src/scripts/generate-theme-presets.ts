@@ -88,11 +88,18 @@ const defaultPrimary = {
   dark: defaultDarkPrimaryMatch?.[1]?.trim() ?? "",
 };
 
-presets.unshift({ label: "Default", value: "default", primary: defaultPrimary });
+const defaultPreset = `{
+  label: t("Default"),
+  value: "default",
+  primary: ${JSON.stringify(defaultPrimary, null, 2)},
+}`;
+const generatedPresets = [defaultPreset, ...presets.map((preset) => JSON.stringify(preset, null, 2))].join(",\n");
 
 const generatedBlock = `// --- generated:themePresets:start ---
 
-export const THEME_PRESET_OPTIONS = ${JSON.stringify(presets, null, 2)} as const;
+export const THEME_PRESET_OPTIONS = [
+${generatedPresets}
+] as const;
 
 export const THEME_PRESET_VALUES = THEME_PRESET_OPTIONS.map((p) => p.value);
 
@@ -104,7 +111,7 @@ const fileContent = fs.readFileSync(outputPath, "utf8");
 
 const updated = fileContent.replace(
   /\/\/ --- generated:themePresets:start ---[\s\S]*?\/\/ --- generated:themePresets:end ---/,
-  generatedBlock,
+  () => generatedBlock,
 );
 
 function main() {
