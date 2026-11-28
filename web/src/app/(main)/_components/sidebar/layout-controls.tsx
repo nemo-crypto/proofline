@@ -1,6 +1,7 @@
 "use client";
 
 import { Settings } from "lucide-react";
+import { useId } from "react";
 import { toast } from "sonner";
 
 import { Button } from "@/components/ui/button";
@@ -25,6 +26,7 @@ import { usePreferencesStore } from "@/stores/preferences/preferences-provider";
 import { LOCALES, locale, setLocale, t } from "@/i18n";
 
 export function LayoutControls() {
+  const preferencesId = useId();
   const themeMode = usePreferencesStore((s) => s.themeMode);
   const resolvedThemeMode = usePreferencesStore((s) => s.resolvedThemeMode);
   const setThemeMode = usePreferencesStore((s) => s.setThemeMode);
@@ -101,20 +103,21 @@ export function LayoutControls() {
   return (
     <Popover>
       <PopoverTrigger asChild>
-        <Button size="icon">
-          <Settings />
+        <Button size="icon" aria-label={t("Preferences")}>
+          <Settings aria-hidden="true" />
         </Button>
       </PopoverTrigger>
-      <PopoverContent align="end">
+      <PopoverContent align="end" aria-labelledby={preferencesId}>
         <div className="flex flex-col gap-5">
           <div className="space-y-1.5">
-            <h4 className="font-medium text-sm leading-none">{t("Preferences")}</h4>
+            <h4 id={preferencesId} className="font-medium text-sm leading-none">{t("Preferences")}</h4>
             <p className="text-muted-foreground text-xs">{t("Customize your dashboard layout preferences.")}</p>
           </div>
           <div className="space-y-3 **:data-[slot=toggle-group]:w-full **:data-[slot=toggle-group-item]:flex-1 **:data-[slot=toggle-group-item]:text-xs">
             <div className="space-y-1">
-              <Label className="font-medium text-xs">{t("Language")}</Label>
+              <Label id={`${preferencesId}-language`} className="font-medium text-xs">{t("Language")}</Label>
               <ToggleGroup
+                aria-labelledby={`${preferencesId}-language`}
                 size="sm"
                 spacing={0}
                 variant="outline"
@@ -136,9 +139,9 @@ export function LayoutControls() {
             </div>
 
             <div className="space-y-1">
-              <Label className="font-medium text-xs">{t("Theme Preset")}</Label>
+              <Label id={`${preferencesId}-theme-preset`} className="font-medium text-xs">{t("Theme Preset")}</Label>
               <Select value={themePreset} onValueChange={onThemePresetChange}>
-                <SelectTrigger size="sm" className="w-full text-xs">
+                <SelectTrigger aria-labelledby={`${preferencesId}-theme-preset`} size="sm" className="w-full text-xs">
                   <SelectValue placeholder={t("Preset")} />
                 </SelectTrigger>
                 <SelectContent>
@@ -161,9 +164,9 @@ export function LayoutControls() {
             </div>
 
             <div className="space-y-1">
-              <Label className="font-medium text-xs">{t("Fonts")}</Label>
+              <Label id={`${preferencesId}-fonts`} className="font-medium text-xs">{t("Fonts")}</Label>
               <Select value={font} onValueChange={onFontChange}>
-                <SelectTrigger size="sm" className="w-full text-xs">
+                <SelectTrigger aria-labelledby={`${preferencesId}-fonts`} size="sm" className="w-full text-xs">
                   <SelectValue placeholder={t("Select font")} />
                 </SelectTrigger>
                 <SelectContent>
@@ -179,8 +182,9 @@ export function LayoutControls() {
             </div>
 
             <div className="space-y-1">
-              <Label className="font-medium text-xs">{t("Theme Mode")}</Label>
+              <Label id={`${preferencesId}-theme-mode`} className="font-medium text-xs">{t("Theme Mode")}</Label>
               <ToggleGroup
+                aria-labelledby={`${preferencesId}-theme-mode`}
                 size="sm"
                 spacing={0}
                 variant="outline"
@@ -201,8 +205,9 @@ export function LayoutControls() {
             </div>
 
             <div className="space-y-1">
-              <Label className="font-medium text-xs">{t("Page Layout")}</Label>
+              <Label id={`${preferencesId}-page-layout`} className="font-medium text-xs">{t("Page Layout")}</Label>
               <ToggleGroup
+                aria-labelledby={`${preferencesId}-page-layout`}
                 size="sm"
                 spacing={0}
                 variant="outline"
@@ -220,8 +225,9 @@ export function LayoutControls() {
             </div>
 
             <div className="space-y-1">
-              <Label className="font-medium text-xs">{t("Navbar Behavior")}</Label>
+              <Label id={`${preferencesId}-navbar-behavior`} className="font-medium text-xs">{t("Navbar Behavior")}</Label>
               <ToggleGroup
+                aria-labelledby={`${preferencesId}-navbar-behavior`}
                 size="sm"
                 spacing={0}
                 variant="outline"
@@ -239,8 +245,9 @@ export function LayoutControls() {
             </div>
 
             <div className="space-y-1">
-              <Label className="font-medium text-xs">{t("Sidebar Style")}</Label>
+              <Label id={`${preferencesId}-sidebar-style`} className="font-medium text-xs">{t("Sidebar Style")}</Label>
               <ToggleGroup
+                aria-labelledby={`${preferencesId}-sidebar-style`}
                 size="sm"
                 spacing={0}
                 variant="outline"
@@ -261,8 +268,9 @@ export function LayoutControls() {
             </div>
 
             <div className="space-y-1">
-              <Label className="font-medium text-xs">{t("Sidebar Collapse Mode")}</Label>
+              <Label id={`${preferencesId}-sidebar-collapse-mode`} className="font-medium text-xs">{t("Sidebar Collapse Mode")}</Label>
               <ToggleGroup
+                aria-labelledby={`${preferencesId}-sidebar-collapse-mode`}
                 size="sm"
                 spacing={0}
                 variant="outline"
