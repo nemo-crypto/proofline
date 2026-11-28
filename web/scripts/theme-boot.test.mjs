@@ -14,11 +14,21 @@ function loadModule(path, require) {
   return context.exports;
 }
 
-const config = loadModule("../src/lib/preferences/preferences-config.ts");
+function requireI18n(id) {
+  assert.equal(id, "@/i18n");
+  return { t: (label) => label };
+}
+
+const modules = {
+  "react/jsx-runtime": { jsx: (_tag, props) => props },
+  "@/lib/fonts/registry": { fontRegistry: { geist: {}, geistMono: {} } },
+  "@/lib/preferences/layout": loadModule("../src/lib/preferences/layout.ts", requireI18n),
+  "@/lib/preferences/preferences-config": loadModule("../src/lib/preferences/preferences-config.ts"),
+  "@/lib/preferences/theme": loadModule("../src/lib/preferences/theme.ts", requireI18n),
+};
 const { ThemeBootScript } = loadModule("../src/scripts/theme-boot.tsx", (id) => {
-  if (id === "react/jsx-runtime") return { jsx: (_tag, props) => props };
-  assert.equal(id, "@/lib/preferences/preferences-config");
-  return config;
+  assert.ok(Object.hasOwn(modules, id), id);
+  return modules[id];
 });
 const script = ThemeBootScript().dangerouslySetInnerHTML.__html;
 
@@ -52,4 +62,12 @@ test("a malformed preference cookie falls back without discarding other choices"
 test("valid percent-encoded values still restore the preference", () => {
   const { attrs } = boot("theme_mode=%64ark; font=geist");
   assert.equal(attrs.get("data-theme-mode"), "dark");
+});
+
+test("unsupported saved preferences fall back to valid defaults", () => {
+  const { attrs } = boot("theme_mode=dark; theme_preset=retired; font=removed; sidebar_variant=old-layout");
+  assert.equal(attrs.get("data-theme-mode"), "dark");
+  assert.equal(attrs.get("data-theme-preset"), "default");
+  assert.equal(attrs.get("data-font"), "geist");
+  assert.equal(attrs.get("data-sidebar-variant"), "floating");
 });
