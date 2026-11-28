@@ -41,6 +41,15 @@ else
   fail=1
 fi
 
+# A relative filename containing "=" is an awk assignment if passed as an operand.
+cp "$tmp/CHANGELOG.md" "$tmp/project=CHANGELOG.md"
+if out=$(cd "$tmp" && bash "$extract" 1.2.3 project=CHANGELOG.md </dev/null) && [ "$out" = "$expected" ]; then
+  echo "PASS: reads an assignment-shaped relative filename"
+else
+  echo "FAIL: did not read the requested changelog file"
+  fail=1
+fi
+
 if out=$(bash "$extract" 9.9.9 "$tmp/CHANGELOG.md"); then
   echo "FAIL: missing section [9.9.9] exited 0; got:"; printf '%s\n' "$out"
   fail=1

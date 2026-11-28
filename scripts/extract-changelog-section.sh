@@ -39,7 +39,7 @@ body=$(awk -v head="## [$version]" '
   }
   found && /[^[:blank:]]/ { printf "%s%s\n", blank, $0; blank = ""; started = 1; next }
   found && started { blank = blank $0 "\n" }
-' "$changelog")
+' < "$changelog")
 
 
 if [ -z "$body" ]; then
