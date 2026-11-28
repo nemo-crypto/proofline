@@ -5,6 +5,8 @@ import test from "node:test";
 import vm from "node:vm";
 import ts from "typescript";
 
+import { literalTranslationKeys } from "./i18n-source-keys.mjs";
+
 const sourceURL = new URL("../src/i18n/index.ts", import.meta.url);
 const require = createRequire(sourceURL);
 const code = ts.transpileModule(readFileSync(sourceURL, "utf8"), {
@@ -36,6 +38,29 @@ function load({ saved = null, languages = ["en-US"], language = "en-US", blocked
   vm.runInNewContext(code, context, { filename: "i18n/index.js" });
   return { api: context.exports, document: context.document, writes, reloads: () => reloads };
 }
+
+test("source checker recognizes literal translations in TypeScript calls", () => {
+  const source = [
+    '// t("Not a call")',
+    "const text = 't(\"Also not a call\")';",
+    'logger.t("Not the translation helper");',
+    't("Double quote");',
+    "t /* comment */ ('\\u0045scaped key');",
+    't(("Parenthesized"));',
+    't(`Template key`);',
+    't(`Dynamic ${key}`);',
+    't("One " + suffix);',
+    'const label = <span>{t("JSX key")}</span>;',
+  ].join("\n");
+
+  assert.deepEqual([...literalTranslationKeys("fixture.tsx", source)], [
+    "Double quote",
+    "Escaped key",
+    "Parenthesized",
+    "Template key",
+    "JSX key",
+  ]);
+});
 
 test("static export remains English and unknown keys fall back safely", () => {
   const { api } = load({ server: true });
