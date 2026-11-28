@@ -2,6 +2,22 @@
 @import "tw-animate-css";
 @import "shadcn/tailwind.css";
 
+@import "@fontsource-variable/inter";
+@import "@fontsource-variable/noto-sans";
+@import "@fontsource-variable/nunito-sans";
+@import "@fontsource-variable/figtree";
+@import "@fontsource-variable/roboto";
+@import "@fontsource-variable/raleway";
+@import "@fontsource-variable/dm-sans";
+@import "@fontsource-variable/public-sans";
+@import "@fontsource-variable/outfit";
+@import "@fontsource-variable/jetbrains-mono";
+@import "@fontsource-variable/noto-serif";
+@import "@fontsource-variable/roboto-slab";
+@import "@fontsource-variable/merriweather";
+@import "@fontsource-variable/lora";
+@import "@fontsource-variable/playfair-display";
+
 /* Theme preset styles: these override CSS variables based on the selected data-theme-preset */
 @import "../styles/presets/brutalist.css";
 @import "../styles/presets/neon.css";
@@ -176,34 +192,34 @@ These serve as the fallback; there is no separate default.css file. */
   }
 
   html[data-font="inter"] body {
-    --font-sans: var(--font-inter);
+    --font-sans: "Inter Variable", var(--font-geist);
   }
   html[data-font="notoSans"] body {
-    --font-sans: var(--font-noto-sans);
+    --font-sans: "Noto Sans Variable", var(--font-geist);
   }
   html[data-font="nunitoSans"] body {
-    --font-sans: var(--font-nunito-sans);
+    --font-sans: "Nunito Sans Variable", var(--font-geist);
   }
   html[data-font="figtree"] body {
-    --font-sans: var(--font-figtree);
+    --font-sans: "Figtree Variable", var(--font-geist);
   }
   html[data-font="roboto"] body {
-    --font-sans: var(--font-roboto);
+    --font-sans: "Roboto Variable", var(--font-geist);
   }
   html[data-font="geist"] body {
     --font-sans: var(--font-geist);
   }
   html[data-font="raleway"] body {
-    --font-sans: var(--font-raleway);
+    --font-sans: "Raleway Variable", var(--font-geist);
   }
   html[data-font="dmSans"] body {
-    --font-sans: var(--font-dm-sans);
+    --font-sans: "DM Sans Variable", var(--font-geist);
   }
   html[data-font="publicSans"] body {
-    --font-sans: var(--font-public-sans);
+    --font-sans: "Public Sans Variable", var(--font-geist);
   }
   html[data-font="outfit"] body {
-    --font-sans: var(--font-outfit);
+    --font-sans: "Outfit Variable", var(--font-geist);
   }
   html[data-font="geistMono"] body {
     --font-sans: var(--font-geist-mono);
@@ -212,22 +228,22 @@ These serve as the fallback; there is no separate default.css file. */
     --font-sans: var(--font-geist-pixel-square);
   }
   html[data-font="jetBrainsMono"] body {
-    --font-sans: var(--font-jetbrains-mono);
+    --font-sans: "JetBrains Mono Variable", var(--font-geist-mono);
   }
   html[data-font="notoSerif"] body {
-    --font-sans: var(--font-noto-serif);
+    --font-sans: "Noto Serif Variable", var(--font-geist);
   }
   html[data-font="robotoSlab"] body {
-    --font-sans: var(--font-roboto-slab);
+    --font-sans: "Roboto Slab Variable", var(--font-geist);
   }
   html[data-font="merriweather"] body {
-    --font-sans: var(--font-merriweather);
+    --font-sans: "Merriweather Variable", var(--font-geist);
   }
   html[data-font="lora"] body {
-    --font-sans: var(--font-lora);
+    --font-sans: "Lora Variable", var(--font-geist);
   }
   html[data-font="playfairDisplay"] body {
-    --font-sans: var(--font-playfair-display);
+    --font-sans: "Playfair Display Variable", var(--font-geist);
   }
 }
 
