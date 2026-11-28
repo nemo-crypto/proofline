@@ -140,6 +140,7 @@ if want_web; then
   run_step "web polling tests" bash -c 'cd web && npm run test:polling'
   run_step "web replay tests" bash -c 'cd web && npm run test:replay'
   run_step "web translation checks" npm --prefix web run test:i18n
+  run_step "web theme boot tests" npm --prefix web run test:theme-boot
   run_step "web upload tests" bash -c 'cd web && npm run test:upload'
   run_step "web shell exit-status tests" npm --prefix web run test:bash
   run_step "web traffic stream tests" bash -c 'cd web && npm run test:traffic-stream'

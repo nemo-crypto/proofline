@@ -37,10 +37,18 @@ export function ThemeBootScript() {
         var DEFAULTS = ${defaults};
 
         function readCookie(name) {
-          var match = document.cookie.split("; ").find(function(c) {
-            return c.startsWith(name + "=");
+          var prefix = name + "=";
+          var match = document.cookie.split(";").map(function(c) {
+            return c.trimStart();
+          }).find(function(c) {
+            return c.startsWith(prefix);
           });
-          return match ? decodeURIComponent(match.split("=")[1]) : null;
+          if (!match) return null;
+          try {
+            return decodeURIComponent(match.slice(prefix.length));
+          } catch (e) {
+            return null;
+          }
         }
 
         function readLocal(name) {
